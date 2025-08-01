@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='membro',
             name='data_nascimento',
-            field=models.DateField(default=1),
+            field=models.DateField(default='2000-01-01'),
             preserve_default=False,
         ),
         migrations.AlterField(
