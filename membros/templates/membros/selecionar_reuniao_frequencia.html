@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Selecionar Reunião para Frequência{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Selecionar Reunião para Frequência</h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="reuniao_select" class="form-label">Selecione a Reunião:</label>
+                            <select class="form-select" id="reuniao_select" name="reuniao_id" required>
+                                <option value="">-- Selecione uma reunião --</option>
+                                {% for reuniao in reunioes %}
+                                    <option value="{{ reuniao.pk }}">
+                                        {{ reuniao.data_reuniao|date:"d/m/Y" }} - {{ reuniao.hora_reuniao|time:"H:i" }} - Célula: {{ reuniao.celula.nome }} (Tema: {{ reuniao.tema }})
+                                    </option>
+                                {% empty %}
+                                    <option value="" disabled>Nenhuma reunião disponível. Crie uma reunião primeiro.</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Prosseguir para Registro</button>
+                        </div>
+                    </form>
+                    <div class="mt-3 text-center">
+                        <a href="{% url 'membros:gestao' %}" class="btn btn-secondary">Voltar para Gestão</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
