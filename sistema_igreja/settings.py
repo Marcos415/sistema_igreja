@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-su!_25b!^%x9%g20^!%m(l26w&k3*e1v5*#q!9x3&j9d&1j+r@' # Mantenha esta chave secreta!
+# Usa variável de ambiente para SECRET_KEY em produção.
+# A chave padrão é apenas para desenvolvimento local.
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-sua-chave-secreta-padrao-aqui-muito-longa-e-segura')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True # Altere para False em produção!
+# Usa variável de ambiente para DEBUG. Em produção, deve ser 'False'.
+DEBUG = os.environ.get('DEBUG_VALUE', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+
+# ALLOWED_HOSTS para produção.
+# No Render, defina a variável de ambiente ALLOWED_HOSTS com o domínio do seu app (ex: seu-app.onrender.com)
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
+# Se estiver em desenvolvimento e ALLOWED_HOSTS estiver vazio, adicione localhost
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -37,12 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'membros', # Sua aplicação personalizada
-    # Adicione outras aplicações customizadas aqui se houver, exemplo: 'outra_app',
+    'membros', # Sua aplicação
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Adicione esta linha para servir arquivos estáticos em produção
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -53,19 +63,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'sistema_igreja.urls'
 
-import os # <--- ADICIONE ESTA LINHA!
-from pathlib import Path
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-print(f"DEBUG: BASE_DIR is {BASE_DIR}") # <--- ADD THIS LINE TEMPORARILY
-
-# ... o restante do seu settings.py ...
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates'], # Adicione sua pasta de templates global aqui
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -73,42 +75,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'loaders': [
-                ('django.template.loaders.filesystem.Loader', {
-                    'templates': None, # <--- Mantenha isso se estiver funcionando
-                }),
-                ('django.template.loaders.app_directories.Loader', {
-                    'templates': None, # <--- E isso
-                }),
-            ],
         },
     },
 ]
 
-# Add this at the end of your settings.py (or after TEMPLATES)
-# This will print the actual template loaders being used.
-try:
-    from django.template import engines
-    configured_loaders = []
-    for engine_alias, engine in engines.all().items():
-        if hasattr(engine, 'template_loaders'): # Access directly
-            for loader in engine.template_loaders:
-                configured_loaders.append(loader)
-        elif hasattr(engine, 'loaders'): # If it's the raw list from settings
-            for loader_config in engine.loaders:
-                # For loader tuples, just add the path for now
-                if isinstance(loader_config, tuple):
-                    configured_loaders.append(loader_config[0])
-                else:
-                    configured_loaders.append(loader_config)
-
-    print(f"DEBUG: Configured Template Loaders: {configured_loaders}")
-except Exception as e:
-    print(f"DEBUG: Error inspecting loaders: {e}")
-    
-    
-# <--- ADD THIS AFTER THE TEMPLATES DICTIONARY, BUT BEFORE WSGI_APPLICATION
-print(f"DEBUG: TEMPLATES DIRS is {TEMPLATES[0]['DIRS']}")
 WSGI_APPLICATION = 'sistema_igreja.wsgi.application'
 
 
@@ -145,9 +115,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'pt-br' # Definindo o idioma para Português (Brasil)
+LANGUAGE_CODE = 'pt-br' # Altere para Português do Brasil
 
-TIME_ZONE = 'America/Sao_Paulo' # Definindo o fuso horário para São Paulo
+TIME_ZONE = 'America/Boa_Vista' # Fuso horário de Boa Vista, Roraima
 
 USE_I18N = True
 
@@ -157,18 +127,30 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/' # URL para servir arquivos estáticos
-
-# Define o diretório onde o Django procurará por arquivos estáticos COLETADOS (para produção)
-# STATIC_ROOT = BASE_DIR / 'staticfiles' # Descomente e ajuste para produção
-
-# Define diretórios adicionais onde o Django procurará por arquivos estáticos durante o desenvolvimento
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static', # Esta linha diz ao Django para procurar na pasta 'static' na raiz do seu projeto
+    os.path.join(BASE_DIR, 'static'), # Se você tem uma pasta 'static' na raiz do projeto
 ]
+
+# Configurações para WhiteNoise (para servir arquivos estáticos em produção)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuração de redirecionamento para login (se você tiver sistema de autenticação)
+LOGIN_REDIRECT_URL = '/gestao/' # Exemplo: redireciona para a página de gestão após login
+LOGOUT_REDIRECT_URL = '/' # Exemplo: redireciona para a home page após logout
+
+# Configuração para mensagens do Django (opcional, mas bom para estilos)
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}

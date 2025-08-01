@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sistema-igreja # Nome do seu serviço no Render
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn sistema_igreja.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true # O Render irá gerar uma chave secreta para você
+      - key: DEBUG_VALUE
+        value: "False" # Define DEBUG como False em produção
+      - key: ALLOWED_HOSTS
+        value: "seu-app.onrender.com" # Substitua pelo domínio que o Render dará ao seu app
+      - key: DISABLE_COLLECTSTATIC
+        value: "0" # Garante que collectstatic seja executado
