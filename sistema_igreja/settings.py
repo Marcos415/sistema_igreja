@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from django.contrib import messages # <--- ADICIONE ESTA LINHA
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -134,7 +135,7 @@ STATICFILES_DIRS = [
 
 # Configurações para WhiteNoise (para servir arquivos estáticos em produção)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestFilesStorage' # Corrigido para CompressedManifestStaticFilesStorage
 
 
 # Default primary key field type
