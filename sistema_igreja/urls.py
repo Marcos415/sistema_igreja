@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic.base import RedirectView # Importe RedirectView
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Redireciona a URL raiz ('/') para '/gestao/'
-    path('', RedirectView.as_view(url='/gestao/', permanent=False)), # permanent=False para 302 temporário
-    path('gestao/', include('membros.urls')), # O prefixo 'gestao/' para todas as suas URLs de membros
+    # Inclui as URLs de autenticação do Django (login, logout, etc.)
+    path('accounts/', include('django.contrib.auth.urls')), # <--- ADICIONE ESTA LINHA
+    path('', RedirectView.as_view(url='/gestao/', permanent=False)),
+    path('gestao/', include('membros.urls')),
 ]
