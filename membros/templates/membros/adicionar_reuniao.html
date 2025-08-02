@@ -1,39 +1,83 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}Adicionar Reunião{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Adicionar Nova Reunião</h5>
-                </div>
-                <div class="card-body">
-                    {% if messages %}
-                        <div class="mb-4">
-                            {% for message in messages %}
-                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+    {# Título movido para fora do card e centralizado #}
+    <h1 class="mb-4 text-center">Adicionar Nova Reunião</h1>
 
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form.as_p }} {# Renderiza o formulário como parágrafos #}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Salvar Reunião</button>
-                        </div>
-                    </form>
-                    <div class="mt-3 text-center">
-                        <a href="{% url 'membros:listar_reunioes' %}" class="btn btn-secondary">Voltar para Lista de Reuniões</a>
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Formulário de Cadastro de Reunião</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.celula.id_for_label }}" class="form-label">Célula:</label>
+                        {{ form.celula|add_class:"form-select" }}
+                        {% if form.celula.errors %}
+                            <div class="text-danger small">{{ form.celula.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.data_reuniao.id_for_label }}" class="form-label">Data da Reunião:</label>
+                        {{ form.data_reuniao|add_class:"form-control" }}
+                        {% if form.data_reuniao.errors %}
+                            <div class="text-danger small">{{ form.data_reuniao.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.hora_reuniao.id_for_label }}" class="form-label">Hora da Reunião:</label>
+                        {{ form.hora_reuniao|add_class:"form-control" }}
+                        {% if form.hora_reuniao.errors %}
+                            <div class="text-danger small">{{ form.hora_reuniao.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.tema.id_for_label }}" class="form-label">Tema da Reunião:</label>
+                        {{ form.tema|add_class:"form-control" }}
+                        {% if form.tema.errors %}
+                            <div class="text-danger small">{{ form.tema.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.observacao.id_for_label }}" class="form-label">Observações:</label> {# Corrigido para 'observacao' #}
+                    {{ form.observacao|add_class:"form-control"|attr:"rows:5" }} {# Corrigido para 'observacao' #}
+                    {% if form.observacao.errors %} {# Corrigido para 'observacao' #}
+                        <div class="text-danger small">{{ form.observacao.errors }}</div> {# Corrigido para 'observacao' #}
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                        <i class="fas fa-save me-2"></i> Salvar Reunião
+                    </button>
+                    <a href="{% url 'membros:listar_reunioes' %}" class="btn btn-secondary btn-lg shadow-sm">
+                        <i class="fas fa-arrow-left me-2"></i> Voltar
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
