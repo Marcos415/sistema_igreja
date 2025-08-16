@@ -10,3 +10,8 @@ __pycache__/
 
 # Outros arquivos que podem ser gerados
 .DS_Store
+
+# Pastas que não devem ser versionadas
+membros/
+static/
+templates/
