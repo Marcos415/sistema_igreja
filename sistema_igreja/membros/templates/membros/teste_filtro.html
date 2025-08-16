@@ -1,0 +1,45 @@
+{# membros/templates/membros/teste_filtro.html #}
+{% extends 'base.html' %}
+{% load custom_filters %} {# ESSENCIAL: Carrega o filtro aqui para o teste #}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+
+        <h2>Testando dicionário simples:</h2>
+        <p>Dicionário: `{{ my_dict }}`</p>
+        <p>Acessando chave '{{ key_str }}': `{{ my_dict|get_item:key_str }}`</p>
+        <p>Acessando chave '{{ key_int }}' (inteiro): `{{ my_dict|get_item:key_int }}`</p>
+        <p>Acessando chave '{{ key_missing }}' (não existe): `{{ my_dict|get_item:key_missing }}` (esperado: vazio)</p>
+
+        <h2>Testando com `form_initial_example` (representando `initial_checkboxes`):</h2>
+        <p>Initial Checkboxes Example: `{{ form_initial_example }}`</p>
+        <p>ID do membro que deveria estar "presente" ({{ some_member_id }}): {% if form_initial_example|get_item:some_member_id %}MARCADO{% else %}NÃO MARCADO{% endif %}</p>
+        <p>ID do membro que NÃO deveria estar "presente" ({{ another_member_id }}): {% if form_initial_example|get_item:another_member_id %}MARCADO{% else %}NÃO MARCADO{% endif %}</p>
+
+        <hr>
+        <p>Se você vê os valores esperados acima, o filtro `get_item` está funcionando corretamente.</p>
+        <a href="{% url 'membros:gestao_frequencia' %}" class="btn-cancel">Voltar para Gestão de Frequência</a>
+    </div>
+
+    <style>
+        .container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        h1 { color: #4CAF50; text-align: center; margin-bottom: 25px; }
+        h2 { color: #333; margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        p { margin-bottom: 10px; line-height: 1.6; }
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .btn-cancel:hover { background-color: #d32f2f; }
+    </style>
+{% endblock %}

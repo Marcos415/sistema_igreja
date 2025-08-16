@@ -1,0 +1,52 @@
+    {% extends 'base.html' %}
+
+    {% block title %}Painel de Gestão{% endblock %}
+
+    {% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4 text-center">Painel de Gestão da Igreja</h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Membros</h5>
+                        <p class="card-text">Gerencie os membros da igreja.</p>
+                        <a href="{% url 'membros:listar_membros' %}" class="btn btn-primary mt-2">Ver Membros</a>
+                        <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-outline-primary mt-2 ms-2">Adicionar Membro</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Células</h5>
+                        <p class="card-text">Administre as células e seus líderes.</p>
+                        <a href="{% url 'membros:listar_celulas' %}" class="btn btn-success mt-2">Ver Células</a>
+                        <a href="{% url 'membros:adicionar_celula' %}" class="btn btn-outline-success mt-2 ms-2">Adicionar Célula</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Reuniões</h5>
+                        <p class="card-text">Organize as reuniões e seus temas.</p>
+                        <a href="{% url 'membros:listar_reunioes' %}" class="btn btn-info mt-2">Ver Reuniões</a>
+                        <a href="{% url 'membros:adicionar_reuniao' %}" class="btn btn-outline-info mt-2 ms-2">Adicionar Reunião</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Frequência</h5>
+                        <p class="card-text">Registre e consulte a frequência dos membros.</p>
+                        <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-warning mt-2">Registrar Frequência</a>
+                        <a href="{% url 'membros:historico_frequencia' %}" class="btn btn-outline-warning mt-2 ms-2">Histórico de Frequência</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

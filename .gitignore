@@ -12,7 +12,4 @@ __pycache__/
 .DS_Store
 
 # Pastas que não devem ser versionadas
-membros/
-static/
-templates/venv_igreja/
-__pycache__/
+__pycache_
