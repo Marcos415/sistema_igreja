@@ -1,0 +1,15 @@
+{% extends 'base.html' %} {# Use o base.html ou base_sistema.html que você tem #}
+
+{% block title %}Adicionar/Editar Membro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ acao }} Membro</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }} {# Isso renderiza todos os campos do seu formulário Django #}
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{% url 'membros:listar_membros' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

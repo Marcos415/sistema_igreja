@@ -1,0 +1,89 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db import IntegrityError
+from .models import Membro, Celula, Reuniao, Frequencia
+from .forms import MembroForm, CelulaForm, ReuniaoForm, FrequenciaForm
+from django.http import HttpResponse
+from datetime import date
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+
+# ... outras views ...
+
+# Vistas Refatoradas para Reuniões (usando CBVs)
+# ... outras views ...
+
+# Vistas para Gestão de Frequência
+
+def selecionar_reuniao_frequencia(request):
+    """
+    Permite selecionar uma reunião para registrar a frequência.
+    """
+    reunioes = Reuniao.objects.filter(data__lte=date.today()).order_by('-data', '-horario_inicio')
+    if request.method == 'POST':
+        reuniao_id = request.POST.get('reuniao_id')
+        if reuniao_id:
+            return redirect('membros:registrar_frequencia_reuniao', pk=reuniao_id)
+    return render(request, 'frequencia/selecionar_reuniao.html', {'reunioes': reunioes, 'titulo_pagina': 'Selecionar Reunião para Frequência'})
+
+def registrar_frequencia_reuniao(request, pk):
+    """
+    Registra a frequência dos membros em uma reunião específica.
+    """
+    # Usando get_object_or_404 para buscar a reunião, caso não exista, retorna um erro 404
+    reuniao = get_object_or_404(Reuniao, pk=pk)
+    
+    # Busca todos os membros para a célula da reunião
+    membros = Membro.objects.filter(celula=reuniao.celula).order_by('nome')
+    
+    # Se o formulário foi enviado (POST)
+    if request.method == 'POST':
+        # Dicionário para armazenar a frequência
+        presencas = {}
+        # Itera sobre os membros para coletar o status de presença
+        for membro in membros:
+            # O nome do campo no formulário HTML deve ser 'presenca_<membro_id>'
+            presenca = request.POST.get(f'presenca_{membro.id}') == 'on'
+            presencas[membro.id] = presenca
+        
+        # Salva a frequência no banco de dados
+        for membro_id, presenca in presencas.items():
+            membro = Membro.objects.get(id=membro_id)
+            # Cria ou atualiza o registro de frequência
+            try:
+                Frequencia.objects.update_or_create(
+                    reuniao=reuniao,
+                    membro=membro,
+                    defaults={'presente': presenca}
+                )
+            except IntegrityError:
+                # Trata o caso de erro de integridade, se houver
+                pass
+
+        return redirect('membros:listar_reunioes') # Redireciona para a lista de reuniões após salvar
+    
+    # Para o método GET, renderiza o formulário de frequência
+    # Carrega a frequência existente, se houver, para pré-popular o formulário
+    frequencias_existentes = {f.membro_id: f.presente for f in Frequencia.objects.filter(reuniao=reuniao)}
+    
+    context = {
+        'reuniao': reuniao,
+        'membros': membros,
+        'frequencias_existentes': frequencias_existentes,
+        'titulo_pagina': f'Registrar Frequência - {reuniao.celula.nome} ({reuniao.data})'
+    }
+    return render(request, 'frequencia/registrar_frequencia.html', context)
+
+
+class HistoricoFrequenciaView(ListView):
+    # ... código existente ...
+
+def gerar_pdf_historico_frequencia(request):
+    # ... código existente ...
+
+# Vistas para home e gestao
+# ... código existente ...

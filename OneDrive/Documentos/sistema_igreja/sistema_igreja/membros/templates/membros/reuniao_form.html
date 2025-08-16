@@ -1,0 +1,51 @@
+{% extends 'base.html' %} {# Este é o base.html que você tem na pasta 'templates' raiz do seu projeto #}
+{% load static %} {# Para carregar arquivos estáticos como CSS ou JS, se você tiver #}
+
+{% block title %}
+    {# A lógica abaixo muda o título da página dependendo se você está criando ou editando uma reunião #}
+    {% if form.instance.pk %}Editar Reunião{% else %}Cadastrar Reunião{% endif %} - Sistema da Igreja
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5"> {# Container do Bootstrap para centralizar e dar espaçamento #}
+    <h1 class="text-center mb-4"> {# Título centralizado #}
+        {% if form.instance.pk %}Editar Reunião{% else %}Cadastrar Nova Reunião{% endif %}
+    </h1>
+    
+    <div class="card p-4 shadow-sm"> {# Cartão com preenchimento e sombra para o formulário #}
+        <form method="post"> {# O formulário enviará os dados via POST #}
+            {% csrf_token %} {# Token de segurança obrigatório no Django para formulários POST #}
+            
+            {# Renderiza cada campo do formulário ReuniaoForm #}
+            {# Você pode renderizar os campos individualmente para ter mais controle sobre o layout #}
+            
+            <div class="mb-3"> {# Margem inferior 3 para espaçamento entre os campos #}
+                <label for="{{ form.celula.id_for_label }}" class="form-label">Célula:</label>
+                {{ form.celula }} {# Renderiza o campo 'celula' do formulário #}
+                {% if form.celula.errors %}<div class="text-danger">{{ form.celula.errors }}</div>{% endif %} {# Exibe erros de validação #}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.data_reuniao.id_for_label }}" class="form-label">Data da Reunião:</label>
+                {{ form.data_reuniao }} {# Renderiza o campo 'data_reuniao' #}
+                {% if form.data_reuniao.errors %}<div class="text-danger">{{ form.data_reuniao.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.hora_reuniao.id_for_label }}" class="form-label">Hora da Reunião:</label>
+                {{ form.hora_reuniao }} {# Renderiza o campo 'hora_reuniao' que adicionamos ao modelo #}
+                {% if form.hora_reuniao.errors %}<div class="text-danger">{{ form.hora_reuniao.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.tema.id_for_label }}" class="form-label">Tema (Opcional):</label>
+                {{ form.tema }} {# Renderiza o campo 'tema' #}
+                {% if form.tema.errors %}<div class="text-danger">{{ form.tema.errors }}</div>{% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Salvar Reunião</button> {# Botão de envio #}
+            <a href="{% url 'membros:listar_reunioes' %}" class="btn btn-secondary">Cancelar</a> {# Botão para cancelar e voltar à lista #}
+        </form>
+    </div>
+</div>
+{% endblock %}
