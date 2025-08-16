@@ -20,3 +20,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+import os
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_collected')
