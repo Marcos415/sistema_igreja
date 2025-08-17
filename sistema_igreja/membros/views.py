@@ -34,6 +34,25 @@ from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
 # Suas outras views...
 
 # View para gerar o PDF da frequência
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib import messages
+from django.template.loader import get_template
+from django.urls import reverse
+from django.conf import settings
+from weasyprint import HTML, CSS
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.contrib.staticfiles.finders import find # Importação para a nova solução
+import os
+import base64
+
+# Importe outros modelos e formulários necessários
+from membros.models import Membro, Celula, Frequencia, Frequencia_Membro
+from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
+
+# Suas outras views...
+
+# View para gerar o PDF da frequência
 def gerar_frequencia_pdf(request, celula_id, data_reuniao):
     try:
         celula = Celula.objects.get(id=celula_id)
@@ -47,14 +66,18 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
         total_membros = total_presentes + total_ausentes
         total_celula = total_membros + total_nao_membros
 
-        # --- MUDANÇA AQUI: Usando staticfiles_storage para garantir o caminho correto ---
-        logo_path = staticfiles_storage.path('img/minha_logo.png')
+        # --- AQUI ESTÁ A MUDANÇA MAIS ROBUSTA ---
+        # 1. Usamos a função find() para localizar o arquivo da logo de forma confiável.
+        logo_path = find('img/minha_logo.png')
         
         logo_base64 = None
-        if os.path.exists(logo_path):
+        if logo_path and os.path.exists(logo_path):
             with open(logo_path, 'rb') as logo_file:
                 encoded_string = base64.b64encode(logo_file.read()).decode('utf-8')
                 logo_base64 = f'data:image/png;base64,{encoded_string}'
+        else:
+            # Esta mensagem de depuração aparecerá se o arquivo não for encontrado
+            print(f"Erro: Logo não encontrada no caminho '{logo_path}'")
 
         # Renderiza o template HTML
         context = {
@@ -91,6 +114,7 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
     except (Celula.DoesNotExist, Frequencia.DoesNotExist):
         messages.error(request, 'Frequência não encontrada para a célula e data selecionadas.')
         return redirect('historico_frequencia')
+
 
 
         # Renderiza o template HTML
