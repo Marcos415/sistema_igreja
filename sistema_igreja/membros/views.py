@@ -7,6 +7,7 @@ from django.conf import settings
 from weasyprint import HTML, CSS
 from django.contrib.staticfiles.storage import staticfiles_storage
 import os
+import base64 # Importe a biblioteca base64
 
 # Importe outros modelos e formulários necessários
 from membros.models import Membro, Celula, Frequencia, Frequencia_Membro
@@ -28,8 +29,17 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
         total_membros = total_presentes + total_ausentes
         total_celula = total_membros + total_nao_membros
 
-        # URL base para os arquivos estáticos, para WeasyPrint
-        static_url = request.build_absolute_uri(settings.STATIC_URL)
+        # --- AQUI ESTÁ A MUDANÇA CRUCIAL ---
+        # 1. Encontre o caminho completo do arquivo estático da logo.
+        logo_path = os.path.join(settings.STATIC_ROOT, 'img', 'minha_logo.png')
+        
+        logo_base64 = None
+        if os.path.exists(logo_path):
+            with open(logo_path, 'rb') as logo_file:
+                # 2. Codifique o conteúdo do arquivo em Base64.
+                encoded_string = base64.b64encode(logo_file.read()).decode('utf-8')
+                # 3. Crie a string de URL de dados (data URI).
+                logo_base64 = f'data:image/png;base64,{encoded_string}'
 
         # Renderiza o template HTML
         context = {
@@ -41,13 +51,14 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
             'total_nao_membros': total_nao_membros,
             'total_membros': total_membros,
             'total_celula': total_celula,
+            'logo_base64': logo_base64, # Passe a URL de dados para o contexto.
         }
         
-        template = get_template('membros/pdf/frequencia.html')
+        template = get_template('membros/relatorios/relatorio_frequencia_pdf.html')
         html_string = template.render(context)
         
-        # Cria o objeto HTML do WeasyPrint, passando a URL base dos arquivos estáticos
-        html = HTML(string=html_string, base_url=static_url)
+        # Cria o objeto HTML do WeasyPrint. Não precisamos de base_url aqui.
+        html = HTML(string=html_string)
 
         # Define o caminho do CSS
         css_path = staticfiles_storage.path('css/pdf_style.css')

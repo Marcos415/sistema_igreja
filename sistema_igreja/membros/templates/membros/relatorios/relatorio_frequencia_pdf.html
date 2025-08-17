@@ -1,6 +1,6 @@
 {# membros/templates/membros/relatorios/relatorio_frequencia_pdf.html #}
 {% load static %}
-{% load custom_filters %} {# Certifique-se de ter este filtro em membros/templatetags/custom_filters.py #}
+{% load custom_filters %} 
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -10,7 +10,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            margin: 10mm 15mm; /* Margens para impressão */
+            margin: 10mm 15mm;
             font-size: 11pt;
             color: #333;
         }
@@ -21,7 +21,7 @@
             padding-bottom: 5mm;
         }
         .header img {
-            max-width: 40mm; /* Tamanho da imagem no PDF */
+            max-width: 40mm;
             margin-bottom: 3mm;
             display: block;
             margin-left: auto;
@@ -38,14 +38,14 @@
             margin-bottom: 5mm;
         }
         .section-details {
-            background-color: #e8f5e9; /* Light green background */
+            background-color: #e8f5e9;
             border-left: 5px solid #4CAF50;
             padding: 10mm;
             margin-bottom: 15mm;
             border-radius: 5px;
         }
         .section-details h2 {
-            color: #388e3c; /* Darker green */
+            color: #388e3c;
             font-size: 14pt;
             margin-top: 0;
             margin-bottom: 8mm;
@@ -57,7 +57,6 @@
             line-height: 1.5;
             text-align: center;
         }
-        /* Estilos para a nova tabela de frequência */
         .frequency-table {
             width: 100%;
             border-collapse: collapse;
@@ -75,11 +74,11 @@
             font-weight: bold;
         }
         .frequency-table td.status-present {
-            color: #388e3c; /* Verde para Presente */
+            color: #388e3c;
             font-weight: bold;
         }
         .frequency-table td.status-absent {
-            color: #d32f2f; /* Vermelho para Ausente */
+            color: #d32f2f;
             font-weight: bold;
         }
         .summary {
@@ -101,9 +100,13 @@
 </head>
 <body>
     <div class="header">
-        {# ATENÇÃO: Corrigido o uso da tag {% static %} para referenciar a logo. #}
-        {# A URL agora será gerada corretamente, permitindo que o WeasyPrint encontre a imagem. #}
-        <img src="{% static 'img/minha_logo.png' %}" alt="Logo da Igreja"> 
+        {# Usando a string base64 para a logo, o que garante que ela será embutida no PDF #}
+        {% if logo_base64 %}
+            <img src="{{ logo_base64 }}" alt="Logo da Igreja">
+        {% else %}
+            <!-- Exibe um texto se a logo não for encontrada, para fins de depuração -->
+            <p>Logo não encontrada.</p>
+        {% endif %}
         <h1>Relatório de Frequência da Célula</h1>
         <p>Sistema de Gestão de Membros e Frequência</p>
     </div>
