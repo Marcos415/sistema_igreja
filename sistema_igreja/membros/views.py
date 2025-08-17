@@ -344,18 +344,21 @@ def gerar_pdf_historico_frequencia(request):
                 'membros': membros_com_frequencia_na_celula
             })
 
+    # Construindo a URL absoluta da logo
+    logo_url = request.build_absolute_uri(static('img/minha_logo.png'))
+    
     # Contexto para passar ao template
     contexto_pdf = {
         'celulas': celulas_com_frequencia,
         'data_geracao': datetime.now().strftime("%d/%m/%Y"),
-        'logo_url': request.build_absolute_uri(static('img/minha_logo.png'))
+        'logo_url': logo_url
     }
 
     # Renderizar o template HTML
     html_string = render_to_string('membros/relatorio.html', contexto_pdf)
     
     # Gerar o PDF a partir do HTML
-    pdf_file = HTML(string=html_string).write_pdf()
+    pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf()
 
     # Criar a resposta HTTP para o download do PDF
     response = HttpResponse(pdf_file, content_type='application/pdf')
