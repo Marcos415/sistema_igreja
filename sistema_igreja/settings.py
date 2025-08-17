@@ -1,25 +1,27 @@
-# settings.py
+"""
+Configurações do Django para o projeto sistema_igreja.
+"""
 
 import os
 from pathlib import Path
+import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# O BASE_DIR e o diretório raiz do projeto Django.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+# A SECRET_KEY é uma chave de segurança para o seu projeto.
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-m&l%w-y^o@#=7(y1q&!m+g9*^71y0c_k(i&6k8!&2c62)h3r1-')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k!h!2a!7_b%h5v=8(0$@=w1v7d-s-j=e+j7w8q-x*y&n$p-k&'
+# A configuração DEBUG deve ser False em produção.
+DEBUG = 'RENDER' not in os.environ
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+# O ALLOWED_HOSTS define quais domínios podem acessar sua aplicação.
 ALLOWED_HOSTS = []
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-
-# Application definition
-
+# INSTALLED_APPS define os aplicativos Django ativados neste projeto.
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'membros',
+    'membros', # OU 'sistema_igreja.membros' dependendo da sua estrutura
 ]
 
 MIDDLEWARE = [
@@ -60,10 +62,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sistema_igreja.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -71,9 +69,10 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -90,10 +89,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'America/Boa_Vista'
@@ -102,11 +97,14 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Configurações para arquivos estáticos.
 STATIC_URL = 'static/'
 
-# Adicione estas linhas para o deploy no Render
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# ESTA LINHA DEVE ESTAR AQUI!
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_collected')
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
