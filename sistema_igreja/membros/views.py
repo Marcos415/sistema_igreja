@@ -6,42 +6,6 @@ from django.urls import reverse
 from django.conf import settings
 from weasyprint import HTML, CSS
 from django.contrib.staticfiles.storage import staticfiles_storage
-import os
-import base64 # Importe a biblioteca base64
-
-# Importe outros modelos e formulários necessários
-from membros.models import Membro, Celula, Frequencia, Frequencia_Membro
-from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
-
-# Suas outras views...
-
-# View para gerar o PDF da frequência
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import messages
-from django.template.loader import get_template
-from django.urls import reverse
-from django.conf import settings
-from weasyprint import HTML, CSS
-from django.contrib.staticfiles.storage import staticfiles_storage # Importação necessária
-import os
-import base64
-
-# Importe outros modelos e formulários necessários
-from membros.models import Membro, Celula, Frequencia, Frequencia_Membro
-from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
-
-# Suas outras views...
-
-# View para gerar o PDF da frequência
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import messages
-from django.template.loader import get_template
-from django.urls import reverse
-from django.conf import settings
-from weasyprint import HTML, CSS
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.contrib.staticfiles.finders import find # Importação para a nova solução
 import os
 import base64
@@ -105,43 +69,6 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
             stylesheets = []
 
         pdf = html.write_pdf(stylesheets=stylesheets)
-        
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="Frequencia_Celula_{celula.nome}_{frequencia.data_reuniao}.pdf"'
-        
-        return response
-
-    except (Celula.DoesNotExist, Frequencia.DoesNotExist):
-        messages.error(request, 'Frequência não encontrada para a célula e data selecionadas.')
-        return redirect('historico_frequencia')
-
-
-
-        # Renderiza o template HTML
-        context = {
-            'celula': celula,
-            'frequencia': frequencia,
-            'frequencia_membros': frequencia_membros,
-            'total_presentes': total_presentes,
-            'total_ausentes': total_ausentes,
-            'total_nao_membros': total_nao_membros,
-            'total_membros': total_membros,
-            'total_celula': total_celula,
-            'logo_base64': logo_base64, # Passe a URL de dados para o contexto.
-        }
-        
-        template = get_template('membros/relatorios/relatorio_frequencia_pdf.html')
-        html_string = template.render(context)
-        
-        # Cria o objeto HTML do WeasyPrint. Não precisamos de base_url aqui.
-        html = HTML(string=html_string)
-
-        # Define o caminho do CSS
-        css_path = staticfiles_storage.path('css/pdf_style.css')
-        css = CSS(filename=css_path)
-
-        # Gera o PDF
-        pdf = html.write_pdf(stylesheets=[css])
         
         response = HttpResponse(pdf, content_type='application/pdf')
         response['Content-Disposition'] = f'inline; filename="Frequencia_Celula_{celula.nome}_{frequencia.data_reuniao}.pdf"'
