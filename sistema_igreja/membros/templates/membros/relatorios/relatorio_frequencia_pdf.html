@@ -101,9 +101,9 @@
 </head>
 <body>
     <div class="header">
-        {# ATENÇÃO: Ajuste 'minha_logo.png' para o nome EXATO do seu arquivo de logo #}
-        {# Ex: se sua logo for 'logo_igreja.png', use 'img/logo_igreja.png' #}
-        <img src="{{ STATIC_URL }}img/minha_logo.png" alt="Logo da Igreja"> 
+        {# ATENÇÃO: Corrigido o uso da tag {% static %} para referenciar a logo. #}
+        {# A URL agora será gerada corretamente, permitindo que o WeasyPrint encontre a imagem. #}
+        <img src="{% static 'img/minha_logo.png' %}" alt="Logo da Igreja"> 
         <h1>Relatório de Frequência da Célula</h1>
         <p>Sistema de Gestão de Membros e Frequência</p>
     </div>
