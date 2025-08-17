@@ -7,6 +7,8 @@ from .forms import MembroForm, CelulaForm, ReuniaoForm, FrequenciaForm
 from django.http import HttpResponse, Http404
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from django.conf import settings
+from django.templatetags.static import static
 
 # Para lidar com datas
 from datetime import datetime
@@ -302,8 +304,7 @@ def gerar_pdf_historico_frequencia(request):
             celulas_para_relatorio = [] # Zera a lista para não gerar PDF
     else:
         # Se nenhum filtro de célula, pega todas as células que têm reuniões no queryset filtrado
-        # CORREÇÃO AQUI: 'reuniao__in' foi alterado para 'reunioes__in'
-        celulas_para_relatorio = Celula.objects.filter(reunioes__in=reunioes_qs).distinct().order_by('nome')
+        celulas_para_relatorio = Celula.objects.filter(reuniao__in=reunioes_qs).distinct().order_by('nome')
 
 
     celulas_com_frequencia = []
@@ -323,41 +324,43 @@ def gerar_pdf_historico_frequencia(request):
                 reuniao__in=reunioes_qs.filter(celula=celula) # Filtra frequências pelas reuniões já filtradas e desta célula
             ).order_by('reuniao__data_reuniao', 'reuniao__hora_reuniao')
 
+            # Prepara os dados para o template, convertendo o objeto Frequencia em um dicionario mais simples
+            frequencias_simples = []
+            for freq in frequencias_membro:
+                frequencias_simples.append({
+                    'data': freq.reuniao.data_reuniao,
+                    'status': 'Presente' if freq.status == 'P' else 'Ausente'
+                })
+
             if frequencias_membro.exists():
                 membros_com_frequencia_na_celula.append({
-                    'membro': membro,
-                    'frequencias': frequencias_membro
+                    'nome': membro.nome_completo,
+                    'frequencias': frequencias_simples
                 })
         
         if membros_com_frequencia_na_celula:
             celulas_com_frequencia.append({
-                'celula': celula,
-                'membros_da_celula': membros_com_frequencia_na_celula
+                'nome_celula': celula.nome,
+                'membros': membros_com_frequencia_na_celula
             })
 
-    # Construir título dinâmico para o PDF
-    titulo_documento = 'Relatório de Histórico de Frequência'
-    if celula_id and celulas_para_relatorio:
-        titulo_documento += f' da Célula: {celulas_para_relatorio[0].nome}'
-    if data_reuniao_str:
-        try:
-            selected_data_reuniao_obj = datetime.strptime(data_reuniao_str, '%Y-%m-%d').date()
-            titulo_documento += f' em {selected_data_reuniao_obj.strftime("%d/%m/%Y")}'
-        except ValueError:
-            pass # Data inválida, não adiciona ao título
-
-    context = {
-        'celulas_com_frequencia': celulas_com_frequencia,
-        'titulo_documento': titulo_documento, # Título dinâmico
-        'selected_data_reuniao': data_reuniao_str # Passa para o contexto do PDF (para lógica condicional no template)
+    # Contexto para passar ao template
+    contexto_pdf = {
+        'celulas': celulas_com_frequencia,
+        'data_geracao': datetime.now().strftime("%d/%m/%Y"),
+        'logo_url': request.build_absolute_uri(static('img/minha_logo.png'))
     }
 
-    html_string = render_to_string('membros/historico_frequencia_pdf.html', context)
-
+    # Renderizar o template HTML
+    html_string = render_to_string('membros/relatorio.html', contexto_pdf)
+    
+    # Gerar o PDF a partir do HTML
     pdf_file = HTML(string=html_string).write_pdf()
 
+    # Criar a resposta HTTP para o download do PDF
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="historico_frequencia.pdf"'
+    
     return response
 
 

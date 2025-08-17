@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Histórico de Frequência</title>
+    <style>
+        /* Definicoes para impressao e layout de pagina A4 */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            /* Margens superior e inferior sao usadas para o cabecalho e rodape */
+            @top-center {
+                content: element(header);
+            }
+            @bottom-center {
+                content: element(footer);
+            }
+        }
+        
+        /* O elemento com o ID 'header' sera o cabecalho de cada pagina */
+        #header {
+            position: running(header);
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+        /* O elemento com o ID 'footer' sera o rodape de cada pagina */
+        #footer {
+            position: running(footer);
+            text-align: center;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 150px; /* Ajuste o tamanho da logo conforme necessario */
+            height: auto;
+            border-radius: 8px; /* Cantos arredondados para a logo */
+        }
+
+        h1 {
+            color: #1a5276; /* Azul escuro */
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        h2 {
+            color: #2e86c1; /* Azul medio */
+            font-size: 20px;
+            border-bottom: 2px solid #aeb6bf;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .data-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .data-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 5px solid #5d6d7e;
+        }
+
+        .presente {
+            color: green;
+            font-weight: bold;
+        }
+
+        .ausente {
+            color: red;
+            font-weight: bold;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <!-- Seção do cabeçalho que será repetida em todas as páginas -->
+    <div id="header">
+        <img src="https://placehold.co/150x150/5D6D7E/ffffff?text=LOGO" alt="Logo da Igreja" class="logo">
+        <h1>Relatório de Histórico de Frequência</h1>
+    </div>
+
+    <!-- Conteúdo principal do relatório -->
+    <div class="content">
+        {% for celula in celulas %}
+            <h2>{{ celula.nome }}</h2>
+            <ul class="data-list">
+                {% for membro in celula.membros %}
+                    <li class="data-item">
+                        <strong>Nome:</strong> {{ membro.nome }} <br>
+                        <strong>Data da Frequência:</strong> {{ membro.data }} <br>
+                        <strong>Status:</strong> <span class="{% if membro.presente %}presente{% else %}ausente{% endif %}">{{ 'Presente' if membro.presente else 'Ausente' }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+
+    <!-- Seção do rodapé (opcional, pode ser ajustada ou removida) -->
+    <div id="footer">
+        <p>Gerado em: {{ data_geracao }}</p>
+    </div>
+</body>
+</html>
