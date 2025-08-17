@@ -16,6 +16,24 @@ from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
 # Suas outras views...
 
 # View para gerar o PDF da frequência
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.contrib import messages
+from django.template.loader import get_template
+from django.urls import reverse
+from django.conf import settings
+from weasyprint import HTML, CSS
+from django.contrib.staticfiles.storage import staticfiles_storage # Importação necessária
+import os
+import base64
+
+# Importe outros modelos e formulários necessários
+from membros.models import Membro, Celula, Frequencia, Frequencia_Membro
+from membros.forms import FrequenciaForm, FrequenciaSelecaoForm
+
+# Suas outras views...
+
+# View para gerar o PDF da frequência
 def gerar_frequencia_pdf(request, celula_id, data_reuniao):
     try:
         celula = Celula.objects.get(id=celula_id)
@@ -29,17 +47,51 @@ def gerar_frequencia_pdf(request, celula_id, data_reuniao):
         total_membros = total_presentes + total_ausentes
         total_celula = total_membros + total_nao_membros
 
-        # --- AQUI ESTÁ A MUDANÇA CRUCIAL ---
-        # 1. Encontre o caminho completo do arquivo estático da logo.
-        logo_path = os.path.join(settings.STATIC_ROOT, 'img', 'minha_logo.png')
+        # --- MUDANÇA AQUI: Usando staticfiles_storage para garantir o caminho correto ---
+        logo_path = staticfiles_storage.path('img/minha_logo.png')
         
         logo_base64 = None
         if os.path.exists(logo_path):
             with open(logo_path, 'rb') as logo_file:
-                # 2. Codifique o conteúdo do arquivo em Base64.
                 encoded_string = base64.b64encode(logo_file.read()).decode('utf-8')
-                # 3. Crie a string de URL de dados (data URI).
                 logo_base64 = f'data:image/png;base64,{encoded_string}'
+
+        # Renderiza o template HTML
+        context = {
+            'celula': celula,
+            'frequencia': frequencia,
+            'frequencia_membros': frequencia_membros,
+            'total_presentes': total_presentes,
+            'total_ausentes': total_ausentes,
+            'total_nao_membros': total_nao_membros,
+            'total_membros': total_membros,
+            'total_celula': total_celula,
+            'logo_base64': logo_base64,
+        }
+        
+        template = get_template('membros/relatorios/relatorio_frequencia_pdf.html')
+        html_string = template.render(context)
+        
+        html = HTML(string=html_string)
+
+        css_path = staticfiles_storage.path('css/pdf_style.css')
+        if os.path.exists(css_path):
+            css = CSS(filename=css_path)
+            stylesheets = [css]
+        else:
+            stylesheets = []
+
+        pdf = html.write_pdf(stylesheets=stylesheets)
+        
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="Frequencia_Celula_{celula.nome}_{frequencia.data_reuniao}.pdf"'
+        
+        return response
+
+    except (Celula.DoesNotExist, Frequencia.DoesNotExist):
+        messages.error(request, 'Frequência não encontrada para a célula e data selecionadas.')
+        return redirect('historico_frequencia')
+
 
         # Renderiza o template HTML
         context = {
