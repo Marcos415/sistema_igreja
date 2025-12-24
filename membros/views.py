@@ -1,8 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-# IMPORTAÇÃO CORRETA DOS MODELOS (IMPORTANTE!)
+# IMPORTAÇÃO CORRETA DOS MODELOS
 from .models import Celula, Membro, Reuniao, Frequencia
+
+def home_sistema(request):
+    """
+    Página inicial do sistema (necessária para evitar erro no urls.py).
+    """
+    return render(request, 'membros/home.html')
 
 def registrar_frequencia_reuniao(request):
     """
@@ -31,7 +37,7 @@ def registrar_frequencia_reuniao(request):
             presenca_key = f'presenca_{membro.id}'
             esta_presente = request.POST.get(presenca_key) == 'on'
             
-            # 3. Salva ou atualiza a Frequencia (Nome do modelo corrigido)
+            # 3. Salva ou atualiza a Frequencia
             Frequencia.objects.update_or_create(
                 reuniao=reuniao,
                 membro=membro,
