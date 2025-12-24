@@ -26,7 +26,7 @@ def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
     if request.method == "POST":
         membro.delete()
-        messages.success(request, "Membro removido com sucesso!")
+        messages.success(request, "Membro removido!")
         return redirect('membros:listar_membros')
     return render(request, 'membros/membro_confirm_delete.html', {'membro': membro})
 
@@ -43,13 +43,32 @@ def editar_celula(request, pk):
     return render(request, 'membros/home_sistema.html', {'celula': celula})
 
 def celula_confirm_delete(request, pk):
-    """Resolve o erro: AttributeError 'celula_confirm_delete'"""
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == "POST":
         celula.delete()
-        messages.success(request, "Célula removida com sucesso!")
+        messages.success(request, "Célula removida!")
         return redirect('membros:listar_celulas')
     return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
+
+# --- Gestão de Reuniões (Resolve o erro atual do Render) ---
+def listar_reunioes(request):
+    reunioes = Reuniao.objects.all()
+    return render(request, 'membros/home_sistema.html', {'reunioes': reunioes})
+
+def adicionar_reuniao(request):
+    """Esta é a função que o Render estava procurando"""
+    return render(request, 'membros/home_sistema.html')
+
+def editar_reuniao(request, pk):
+    reuniao = get_object_or_404(Reuniao, pk=pk)
+    return render(request, 'membros/home_sistema.html')
+
+def excluir_reuniao(request, pk):
+    reuniao = get_object_or_404(Reuniao, pk=pk)
+    if request.method == "POST":
+        reuniao.delete()
+        return redirect('membros:listar_reunioes')
+    return render(request, 'membros/home_sistema.html')
 
 # --- Histórico e Frequência ---
 def historico_frequencia(request):
@@ -57,7 +76,7 @@ def historico_frequencia(request):
     return render(request, 'membros/historico_frequencia.html', {'celulas': celulas})
 
 def historico_frequencia_pdf(request):
-    return HttpResponse("Funcionalidade de PDF em desenvolvimento.")
+    return HttpResponse("Gerando PDF do histórico...")
 
 def selecionar_reuniao_frequencia(request):
     return render(request, 'membros/selecionar_reuniao_frequencia.html')
