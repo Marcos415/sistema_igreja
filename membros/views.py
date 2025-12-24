@@ -50,25 +50,26 @@ def celula_confirm_delete(request, pk):
         return redirect('membros:listar_celulas')
     return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
 
-# --- Gestão de Reuniões (Resolve o erro atual do Render) ---
+# --- Gestão de Reuniões ---
 def listar_reunioes(request):
     reunioes = Reuniao.objects.all()
     return render(request, 'membros/home_sistema.html', {'reunioes': reunioes})
 
 def adicionar_reuniao(request):
-    """Esta é a função que o Render estava procurando"""
     return render(request, 'membros/home_sistema.html')
 
 def editar_reuniao(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
-    return render(request, 'membros/home_sistema.html')
+    return render(request, 'membros/home_sistema.html', {'reuniao': reuniao})
 
-def excluir_reuniao(request, pk):
+def reuniao_confirm_delete(request, pk):
+    """Corrigido o nome para bater com o urls.py e resolver o AttributeError"""
     reuniao = get_object_or_404(Reuniao, pk=pk)
     if request.method == "POST":
         reuniao.delete()
+        messages.success(request, "Reunião removida!")
         return redirect('membros:listar_reunioes')
-    return render(request, 'membros/home_sistema.html')
+    return render(request, 'membros/reuniao_confirm_delete.html', {'reuniao': reuniao})
 
 # --- Histórico e Frequência ---
 def historico_frequencia(request):
