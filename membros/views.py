@@ -63,7 +63,6 @@ def editar_reuniao(request, pk):
     return render(request, 'membros/home_sistema.html', {'reuniao': reuniao})
 
 def reuniao_confirm_delete(request, pk):
-    """Corrigido o nome para bater com o urls.py e resolver o AttributeError"""
     reuniao = get_object_or_404(Reuniao, pk=pk)
     if request.method == "POST":
         reuniao.delete()
@@ -76,8 +75,9 @@ def historico_frequencia(request):
     celulas = Celula.objects.all()
     return render(request, 'membros/historico_frequencia.html', {'celulas': celulas})
 
-def historico_frequencia_pdf(request):
-    return HttpResponse("Gerando PDF do histórico...")
+def gerar_pdf_historico_frequencia(request):
+    """NOME CORRIGIDO: Agora o build do Render vai passar"""
+    return HttpResponse("O PDF será gerado aqui em breve.")
 
 def selecionar_reuniao_frequencia(request):
     return render(request, 'membros/selecionar_reuniao_frequencia.html')
