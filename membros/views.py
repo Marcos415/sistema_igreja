@@ -8,7 +8,6 @@ from datetime import date
 def home_sistema(request):
     return render(request, 'membros/home_sistema.html')
 
-# ESSA É A FUNÇÃO QUE ESTAVA FALTANDO NO SEU ERRO:
 def gestao_view(request):
     return render(request, 'membros/home_sistema.html')
 
@@ -40,6 +39,11 @@ def listar_celulas(request):
 def adicionar_celula(request):
     return render(request, 'membros/home_sistema.html')
 
+def editar_celula(request, pk):
+    celula = get_object_or_404(Celula, pk=pk)
+    # Aqui você pode redirecionar para um formulário de célula se tiver
+    return render(request, 'membros/home_sistema.html', {'celula': celula})
+
 def celula_confirm_delete(request, pk):
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == "POST":
@@ -48,9 +52,28 @@ def celula_confirm_delete(request, pk):
         return redirect('membros:listar_celulas')
     return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
 
-# --- REUNIÕES E FREQUÊNCIA ---
+# --- GESTÃO DE REUNIÕES ---
+def listar_reunioes(request):
+    reunioes = Reuniao.objects.all().order_by('-data_reuniao')
+    return render(request, 'membros/home_sistema.html', {'reunioes': reunioes})
+
+def adicionar_reuniao(request):
+    return render(request, 'membros/home_sistema.html')
+
+def editar_reuniao(request, pk):
+    reuniao = get_object_or_404(Reuniao, pk=pk)
+    return render(request, 'membros/home_sistema.html', {'reuniao': reuniao})
+
+def reuniao_confirm_delete(request, pk):
+    reuniao = get_object_or_404(Reuniao, pk=pk)
+    if request.method == "POST":
+        reuniao.delete()
+        messages.success(request, "Reunião removida!")
+        return redirect('membros:listar_membros')
+    return render(request, 'membros/home_sistema.html', {'reuniao': reuniao})
+
+# --- FREQUÊNCIA ---
 def selecionar_reuniao_frequencia(request):
-    # Usando o campo correto 'data_reuniao'
     reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
     if request.method == 'POST':
         reuniao_id = request.POST.get('reuniao_id')
@@ -69,25 +92,20 @@ def registrar_frequencia_reuniao(request, pk):
                 reuniao=reuniao, membro=membro,
                 defaults={'presente': presente}
             )
-        messages.success(request, "Frequência registrada!")
+        messages.success(request, "Frequência salva!")
         return redirect('membros:listar_membros')
 
-    # Dicionário para marcar quem já está presente ao carregar a página
     frequencias_existentes = {f.membro_id: f.presente for f in Frequencia.objects.filter(reuniao=reuniao)}
-    
     return render(request, 'membros/registrar_frequencia_reuniao.html', {
         'reuniao': reuniao, 
         'membros': membros, 
         'frequencias_existentes': frequencias_existentes
     })
 
-# --- OUTROS ---
+# --- HISTÓRICO E PDF ---
 def historico_frequencia(request):
     celulas = Celula.objects.all().order_by('nome')
     return render(request, 'membros/historico_frequencia.html', {'celulas': celulas})
 
-def listar_reunioes(request): return redirect('membros:selecionar_reuniao_frequencia')
-def adicionar_reuniao(request): return render(request, 'membros/home_sistema.html')
-def editar_reuniao(request, pk): return render(request, 'membros/home_sistema.html')
-def reuniao_confirm_delete(request, pk): return redirect('membros:listar_membros')
-def gerar_pdf_historico_frequencia(request): return HttpResponse("PDF em breve.")
+def gerar_pdf_historico_frequencia(request):
+    return HttpResponse("PDF em breve.")
