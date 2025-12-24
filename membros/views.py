@@ -26,6 +26,7 @@ def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
     if request.method == "POST":
         membro.delete()
+        messages.success(request, "Membro removido com sucesso!")
         return redirect('membros:listar_membros')
     return render(request, 'membros/membro_confirm_delete.html', {'membro': membro})
 
@@ -38,17 +39,17 @@ def adicionar_celula(request):
     return render(request, 'membros/home_sistema.html')
 
 def editar_celula(request, pk):
-    """Função que faltava para corrigir o erro de build"""
     celula = get_object_or_404(Celula, pk=pk)
     return render(request, 'membros/home_sistema.html', {'celula': celula})
 
-def excluir_celula(request, pk):
-    """Função adicional para garantir estabilidade das URLs"""
+def celula_confirm_delete(request, pk):
+    """Resolve o erro: AttributeError 'celula_confirm_delete'"""
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == "POST":
         celula.delete()
+        messages.success(request, "Célula removida com sucesso!")
         return redirect('membros:listar_celulas')
-    return render(request, 'membros/home_sistema.html', {'celula': celula})
+    return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
 
 # --- Histórico e Frequência ---
 def historico_frequencia(request):
