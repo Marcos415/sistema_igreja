@@ -41,7 +41,7 @@ def editar_membro(request, pk):
             return redirect('membros:listar_membros')
     else:
         form = MembroForm(instance=membro)
-    return render(request, 'membros/membro_form.html', {'form': form, 'membro': m})
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
 
 def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
@@ -123,7 +123,7 @@ def reuniao_confirm_delete(request, pk):
         return redirect('membros:listar_reunioes')
     return render(request, 'membros/reuniao_confirm_delete.html', {'reuniao': reuniao})
 
-# --- FREQUÊNCIA (REGISTRO) ---
+# --- FREQUÊNCIA ---
 def selecionar_reuniao_frequencia(request):
     reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
     if request.method == 'POST':
@@ -143,7 +143,7 @@ def registrar_frequencia_reuniao(request, pk):
                 reuniao=reuniao, membro=membro,
                 defaults={'presente': presente}
             )
-        messages.success(request, "Frequência salva com sucesso!")
+        messages.success(request, "Frequência salva!")
         return redirect('membros:historico_frequencia')
 
     frequencias_existentes = {f.membro_id: f.presente for f in Frequencia.objects.filter(reuniao=reuniao)}
@@ -153,7 +153,6 @@ def registrar_frequencia_reuniao(request, pk):
         'frequencias_existentes': frequencias_existentes
     })
 
-# --- HISTÓRICO E FILTROS ---
 def historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
@@ -163,7 +162,7 @@ def historico_frequencia(request):
         frequencias__isnull=False
     ).values_list('data_reuniao', flat=True).distinct().order_by('-data_reuniao')
 
-    frequencias_query = Frequencia.objects.select_related('membro', 'reuniao', 'membro__celula').all()
+    frequencias_query = Frequencia.objects.select_related('membro', 'reuniao').all()
 
     if celula_id:
         frequencias_query = frequencias_query.filter(membro__celula_id=celula_id)
@@ -186,8 +185,8 @@ def historico_frequencia(request):
     }
     return render(request, 'membros/historico_frequencia.html', context)
 
-# --- PDF ---
-def historico_frequencia_pdf(request):
+# --- GERAÇÃO DE PDF (NOME CORRIGIDO PARA O SEU URLS.PY) ---
+def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
 
@@ -205,8 +204,12 @@ def historico_frequencia_pdf(request):
                 freqs = freqs.filter(reuniao__data_reuniao=data_reuniao)
             if freqs.exists():
                 membros_com_dados.append({'membro': membro, 'frequencias': freqs})
+
         if membros_com_dados:
-            celulas_com_frequencia.append({'celula': celula, 'membros_da_celula': membros_com_dados})
+            celulas_com_frequencia.append({
+                'celula': celula,
+                'membros_da_celula': membros_com_dados
+            })
 
     context = {
         'titulo_documento': 'Relatório de Frequência',
