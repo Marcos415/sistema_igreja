@@ -80,7 +80,7 @@ def selecionar_reuniao_frequencia(request):
 
 def registrar_frequencia_reuniao(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
-    membros = Membro.objects.filter(celula=reuniao.celula).order_by('nome')
+    membros = Membro.objects.filter(celula=reuniao.celula).order_by('nome_completo')
 
     if request.method == 'POST':
         for membro in membros:
