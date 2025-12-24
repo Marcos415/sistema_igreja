@@ -1,0 +1,45 @@
+{# membros/templates/membros/gestao_frequencia.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo_pagina }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>{{ titulo_pagina }}</h1>
+        <p>Bem-vindo ao sistema de gestão de frequência de membros.</p>
+
+        <div class="options">
+            <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn-option">Registrar Nova Frequência</a>
+            <a href="{% url 'membros:historico_frequencia' %}" class="btn-option">Ver Histórico de Frequência</a>
+            {# Adicione outros botões/links conforme o sistema cresce #}
+        </div>
+    </div>
+
+    <style>
+        .container { text-align: center; }
+        h1 { color: #4CAF50; margin-bottom: 30px; }
+        p { font-size: 1.1em; margin-bottom: 40px; }
+        .options { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+        .btn-option {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-option:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        /* Ajustes para botões específicos se necessário */
+        .btn-option:nth-child(1) { background-color: #28a745; } /* Registrar */
+        .btn-option:nth-child(1):hover { background-color: #218838; }
+        .btn-option:nth-child(2) { background-color: #17a2b8; } /* Histórico */
+        .btn-option:nth-child(2):hover { background-color: #138496; }
+    </style>
+{% endblock %}

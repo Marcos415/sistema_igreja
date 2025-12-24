@@ -1,0 +1,23 @@
+{# membros/templates/membros/partials/membro_checkboxes.html #}
+{% comment %} 
+    Este template parcial renderiza os checkboxes dos membros.
+    Ele é carregado pelo template pai (registrar_frequencia.html).
+    Recebe 'membros' (QuerySet de Membro) e 'initial_checkboxes' (dicionário {membro_id: True}) como contexto.
+
+    IMPORTANTE: O filtro 'custom_filters' NÃO é carregado aqui.
+    Ele deve ser carregado APENAS no template pai (registrar_frequencia.html)
+    que inclui este parcial, para evitar erros de filtro inválido.
+{% endcomment %}
+
+{% if membros %}
+    {% for membro in membros %}
+        <div class="membro-item">
+            <input type="checkbox" name="membros_presentes" id="membro_{{ membro.id }}" value="{{ membro.id }}" class="membro-checkbox"
+                   {# Usa 'initial_checkboxes' que é o dicionário diretamente para o filtro #}
+                   {% if initial_checkboxes|get_item:membro.id %}checked{% endif %}>
+            <label for="membro_{{ membro.id }}">{{ membro.nome_completo }}</label>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Nenhum membro ativo encontrado para esta célula.</p>
+{% endif %}

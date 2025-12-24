@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Listar Membros - Sistema da Igreja{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Lista de Membros</h1>
+    
+    {% if membros %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>Célula</th>
+                    <th>Data de Adesão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for membro in membros %}
+                    <tr>
+                        <td>{{ membro.nome_completo }}</td>
+                        <td>{{ membro.celula.nome|default:"Não atribuída" }}</td>
+                        <td>{{ membro.data_adesao|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'membros:editar_membro' membro.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                            {# >>> CORRIGIDO PARA 'excluir_membro' <<< #}
+                            <a href="{% url 'membros:excluir_membro' membro.pk %}" class="btn btn-danger btn-sm">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Nenhum membro cadastrado ainda. <a href="{% url 'membros:adicionar_membro' %}">Cadastre um novo membro!</a></p>
+    {% endif %}
+
+    <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-primary mt-3">Adicionar Novo Membro</a>
+    <a href="{% url 'membros:home_sistema' %}" class="btn btn-secondary mt-3">Voltar à Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Listar Células{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Lista de Células</h1>
+
+    {# Mensagens do Django #}
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <a href="{% url 'membros:adicionar_celula' %}" class="btn btn-primary mb-3">Adicionar Nova Célula</a>
+
+    {% if celulas %} {# <--- VERIFIQUE SE ESTE 'IF' ESTÁ CORRETO E SE 'celulas' ESTÁ SENDO PASSADO #}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome da Célula</th>
+                        <th>Líder</th>
+                        <th>Endereço</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for celula in celulas %}
+                    <tr>
+                        <td>{{ celula.id }}</td>
+                        <td>{{ celula.nome }}</td>
+                        <td>{{ celula.lider }}</td>
+                        <td>{{ celula.endereco }}</td>
+                        <td>
+                            <a href="{% url 'membros:editar_celula' celula.pk %}" class="btn btn-sm btn-info me-2">Editar</a>
+                            <a href="{% url 'membros:celula_confirm_delete' celula.pk %}" class="btn btn-sm btn-danger">Excluir</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="alert alert-info">Nenhuma célula cadastrada ainda.</p> {# <--- MENSAGEM CORRIGIDA AQUI #}
+    {% endif %}
+
+    <a href="{% url 'membros:gestao' %}" class="btn btn-secondary mt-3">Voltar para Gestão</a>
+</div>
+{% endblock %}

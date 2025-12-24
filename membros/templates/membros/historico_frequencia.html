@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico de Frequência{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Histórico de Frequência</h1>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-primary">Registrar Nova Frequência</a>
+    </div>
+
+    <hr>
+
+    <h4 class="mb-3">Filtrar Histórico e Gerar Relatório em PDF</h4>
+    <form method="get" action="{% url 'membros:historico_frequencia' %}" class="mb-4 p-3 border rounded shadow-sm">
+        <div class="row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label for="celula_filter" class="form-label">Filtrar por Célula:</label>
+                <select class="form-select" id="celula_filter" name="celula_id">
+                    <option value="">Todas as Células</option>
+                    {% for celula in celulas %}
+                        <option value="{{ celula.pk }}" {% if selected_celula_id == celula.pk %}selected{% endif %}>{{ celula.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="data_reuniao_filter" class="form-label">Filtrar por Data da Reunião:</label>
+                <select class="form-select" id="data_reuniao_filter" name="data_reuniao">
+                    <option value="">Todas as Datas</option>
+                    {% for data in datas_reuniao_disponiveis %}
+                        <option value="{{ data|date:'Y-m-d' }}" {% if selected_data_reuniao == data|date:'Y-m-d' %}selected{% endif %}>{{ data|date:"d/m/Y" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 mb-3 text-md-end">
+                <button type="submit" class="btn btn-secondary">Aplicar Filtro (na página)</button>
+                {# Botão para gerar PDF, passa os mesmos filtros #}
+                <button type="button" onclick="window.open('{% url 'membros:historico_frequencia_pdf' %}?celula_id=' + document.getElementById('celula_filter').value + '&data_reuniao=' + document.getElementById('data_reuniao_filter').value, '_blank')" class="btn btn-info ms-2">Gerar PDF</button>
+            </div>
+        </div>
+    </form>
+
+    <hr>
+
+    {# O histórico exibido na página será filtrado pela view #}
+    {% if historico %}
+        {% for item in historico %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Membro: <strong>{{ item.membro.nome_completo }}</strong></h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if item.frequencias %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Reunião (Tema)</th>
+                                        <th>Data</th>
+                                        <th>Hora</th>
+                                        <th>Presente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for freq in item.frequencias %}
+                                    <tr>
+                                        <td>{{ freq.reuniao.tema }}</td>
+                                        <td>{{ freq.reuniao.data_reuniao|date:"d/m/Y" }}</td>
+                                        <td>{{ freq.reuniao.hora_reuniao|time:"H:i" }}</td>
+                                        <td>
+                                            {% if freq.presente %}
+                                                <span class="badge bg-success">Sim</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Não</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="card-text p-3">Nenhum registro de frequência para este membro.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Nenhum Histórico de Frequência Encontrado para os filtros aplicados.
+            <p class="mt-2">Parece que não há nenhuma reunião com frequência registrada ainda ou os filtros não correspondem a dados existentes.</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-4 text-center">
+        <a href="{% url 'membros:gestao' %}" class="btn btn-secondary">Voltar para Gestão</a>
+    </div>
+</div>
+{% endblock %}

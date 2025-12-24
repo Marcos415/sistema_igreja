@@ -1,0 +1,40 @@
+    {% extends 'base.html' %}
+
+    {% block title %}Adicionar Membro{% endblock %}
+
+    {% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Adicionar Novo Membro</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            <div class="mb-4">
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }} {# Renderiza o formulário como parágrafos #}
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Salvar Membro</button>
+                            </div>
+                        </form>
+                        <div class="mt-3 text-center">
+                            <a href="{% url 'membros:listar_membros' %}" class="btn btn-secondary">Voltar para Lista de Membros</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}

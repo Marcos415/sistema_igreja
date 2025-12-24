@@ -1,0 +1,150 @@
+{# membros/templates/membros/relatorios/relatorio_frequencia_pdf.html #}
+{% load static %}
+{% load custom_filters %} 
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Frequência - Célula {{ reuniao.celula.nome }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 10mm 15mm;
+            font-size: 11pt;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15mm;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5mm;
+        }
+        .header img {
+            max-width: 40mm;
+            margin-bottom: 3mm;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .header h1 {
+            color: #4CAF50;
+            font-size: 18pt;
+            margin: 5mm 0 2mm 0;
+        }
+        .header p {
+            font-size: 10pt;
+            color: #777;
+            margin-bottom: 5mm;
+        }
+        .section-details {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+            padding: 10mm;
+            margin-bottom: 15mm;
+            border-radius: 5px;
+        }
+        .section-details h2 {
+            color: #388e3c;
+            font-size: 14pt;
+            margin-top: 0;
+            margin-bottom: 8mm;
+            text-align: center;
+        }
+        .section-details p {
+            margin: 2mm 0;
+            font-size: 11pt;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .frequency-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15mm;
+        }
+        .frequency-table th, .frequency-table td {
+            border: 1px solid #ddd;
+            padding: 8mm;
+            text-align: left;
+            font-size: 10pt;
+        }
+        .frequency-table th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: bold;
+        }
+        .frequency-table td.status-present {
+            color: #388e3c;
+            font-weight: bold;
+        }
+        .frequency-table td.status-absent {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .summary {
+            margin-top: 15mm;
+            text-align: right;
+            font-size: 11pt;
+        }
+        .summary p {
+            margin: 2mm 0;
+        }
+        .no-data-message {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+            margin-top: 20mm;
+            font-size: 12pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {# Usando a string base64 para a logo, o que garante que ela será embutida no PDF #}
+        {% if logo_base64 %}
+            <img src="{{ logo_base64 }}" alt="Logo da Igreja">
+        {% else %}
+            <!-- Exibe um texto se a logo não for encontrada, para fins de depuração -->
+            <p>Logo não encontrada.</p>
+        {% endif %}
+        <h1>Relatório de Frequência da Célula</h1>
+        <p>Sistema de Gestão de Membros e Frequência</p>
+    </div>
+
+    <div class="section-details">
+        <h2>Detalhes da Reunião</h2>
+        <p><strong>Célula:</strong> {{ reuniao.celula.nome }}</p>
+        <p><strong>Data:</strong> {{ reuniao.data_reuniao|date:"d/m/Y" }}</p>
+        <p><strong>Observações:</strong> {{ reuniao.observacoes|default:"Nenhuma observação." }}</p>
+    </div>
+
+    {% if lista_frequencia_completa %}
+        <table class="frequency-table">
+            <thead>
+                <tr>
+                    <th>Membro</th>
+                    <th>Presença</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in lista_frequencia_completa %}
+                    <tr>
+                        <td>{{ item.membro.nome_completo }}</td>
+                        <td class="status-{{ item.status|lower }}">{{ item.status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <p><strong>Total de Membros Ativos na Célula:</strong> {{ total_membros_ativos_celula }}</p>
+            <p><strong>Total de Membros Presentes:</strong> {{ total_membros_presentes }}</p>
+            <p><strong>Total de Membros Ausentes:</strong> {{ total_membros_ativos_celula|sub:total_membros_presentes }}</p>
+        </div>
+
+    {% else %}
+        <p class="no-data-message">Nenhuma frequência encontrada para esta reunião. Por favor, verifique o registro.</p>
+    {% endif %}
+
+</body>
+</html>
