@@ -30,7 +30,8 @@
                                 <option value="">-- Selecione uma reunião --</option>
                                 {% for reuniao in reunioes %}
                                     <option value="{{ reuniao.pk }}">
-                                        {{ reuniao.data_reuniao|date:"d/m/Y" }} - {{ reuniao.hora_reuniao|time:"H:i" }} - Célula: {{ reuniao.celula.nome }} (Tema: {{ reuniao.tema }})
+                                        {# Ajustado para usar os campos 'data' e 'horario_inicio' da view #}
+                                        {{ reuniao.data|date:"d/m/Y" }} - {{ reuniao.horario_inicio|time:"H:i" }} - Célula: {{ reuniao.celula.nome }} (Tema: {{ reuniao.tema|default:"Não informado" }})
                                     </option>
                                 {% empty %}
                                     <option value="" disabled>Nenhuma reunião disponível. Crie uma reunião primeiro.</option>

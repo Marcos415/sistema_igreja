@@ -1,57 +1,46 @@
 {% extends 'base.html' %}
 
-{% block title %}Registrar Frequência{% endblock %}
+{% block title %}{{ titulo_pagina }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Registrar Frequência: {{ reuniao.tema }}</h5>
-                    <small>{{ reuniao.data_reuniao|date:"d/m/Y" }}</small>
-                </div>
-                <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <p class="fw-bold">Lista de Presença:</p>
-                        
-                        <div class="list-group mb-3">
-                            {% for field in frequencia_form %}
-                                <div class="list-group-item">
-                                    <div class="form-check">
-                                        {{ field }}
-                                        <label class="form-check-label ms-2" for="{{ field.id_for_label }}">
-                                            {{ field.label }}
-                                        </label>
-                                    </div>
-                                    {% if field.errors %}
-                                        <div class="text-danger small">{{ field.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">Salvar Frequência</button>
-                        </div>
-                    </form>
-
-                    <div class="mt-3 text-center">
-                        <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-outline-secondary">Voltar</a>
-                    </div>
-                </div>
-            </div>
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Registrar Frequência - {{ reuniao.celula.nome }}</h4>
+            <small>Data: {{ reuniao.data|date:"d/m/Y" }} às {{ reuniao.horario_inicio }}</small>
         </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Membro</th>
+                            <th class="text-center">Presente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for membro in membros %}
+                        <tr>
+                            <td>{{ membro.nome }}</td>
+                            <td class="text-center">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="presenca_{{ membro.id }}" 
+                                           id="membro_{{ membro.id }}"
+                                           {% if frequencias_existentes|get_item:membro.id %}checked{% endif %}>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-secondary">Voltar</a>
+                <button type="submit" class="btn btn-success">Salvar Frequência</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
