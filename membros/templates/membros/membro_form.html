@@ -1,15 +1,54 @@
-{% extends 'base.html' %} {# Use o base.html ou base_sistema.html que você tem #}
+{% extends 'base.html' %}
 
-{% block title %}Adicionar/Editar Membro{% endblock %}
+{% block title %}{% if membro %}Editar{% else %}Adicionar{% endif %} Membro{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>{{ acao }} Membro</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }} {# Isso renderiza todos os campos do seu formulário Django #}
-        <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="{% url 'membros:listar_membros' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">{% if membro %}Editar{% else %}Novo{% endif %} Membro</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'membros:listar_membros' %}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Salvar Membro</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* Garante que os campos do Django fiquem bonitos com Bootstrap */
+    input, select, textarea { 
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: .375rem;
+    }
+</style>
 {% endblock %}

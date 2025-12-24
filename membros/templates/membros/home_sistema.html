@@ -1,83 +1,32 @@
-{% extends 'base.html' %} {# Supondo que você estenda um template base.html #}
-{% load static %} {# Para carregar arquivos estáticos como CSS/JS, se necessário #}
-
-{% block title %}Página Inicial - Sistema da Igreja{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container mt-5">
-    {# Mensagens do Django (adicionado para você ver os messages.success/error) #}
-    {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">Sistema de Gestão da Igreja</h1>
+        <p class="text-muted">Selecione uma área para gerenciar</p>
+    </div>
 
-#    <h1 class="text-center mb-4">Bem-vindo ao Sistema de Gestão da Igreja</h1>
-#
-#    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-#        {# Cartão para Gestão de Frequência #}
-#        <div class="col">
-#            <div class="card h-100 shadow-sm">
-#                <div class="card-body">
-#                    <h5 class="card-title">Gestão de Frequência</h5>
-#                    <p class="card-text">Registre e visualize a frequência dos membros nas reuniões.</p>
-#                    <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-primary btn-sm">Registrar Frequência</a>
-#                    <a href="{% url 'membros:historico_frequencia' %}" class="btn btn-secondary btn-sm mt-2">Histórico de Frequência</a>
-#                </div>
-#            </div>
-#        </div>#
-
-        {# Cartão para Gestão de Membros #}
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Gestão de Membros</h5>
-                    <p class="card-text">Gerencie o cadastro de todos os membros da igreja.</p>
-                    {# CORREÇÃO AQUI: 'cadastrar_membro' foi alterado para 'adicionar_membro' (já estava correto no seu envio) #}
-                    <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-primary btn-sm">Adicionar Membro</a>
-                    <a href="{% url 'membros:listar_membros' %}" class="btn btn-secondary btn-sm mt-2">Listar Membros</a>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="text-primary mb-3">Gestão de Frequência</h3>
+                    <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-primary">Registrar Frequência</a>
+                    <a href="{% url 'membros:historico_frequencia' %}" class="btn btn-outline-secondary">Histórico</a>
                 </div>
             </div>
         </div>
 
-        {# Cartão para Gestão de Células #}
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Gestão de Células</h5>
-                    <p class="card-text">Administre as células, líderes e seus membros.</p>
-                    {# CORREÇÃO AQUI: 'cadastrar_celula' alterado para 'adicionar_celula' #}
-                    <a href="{% url 'membros:adicionar_celula' %}" class="btn btn-primary btn-sm">Adicionar Célula</a>
-                    <a href="{% url 'membros:listar_celulas' %}" class="btn btn-secondary btn-sm mt-2">Listar Células</a>
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h3 class="text-success mb-3">Gestão de Membros</h3>
+                    <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-success">Adicionar Membro</a>
+                    <a href="{% url 'membros:listar_membros' %}" class="btn btn-outline-dark">Listar Membros</a>
                 </div>
             </div>
         </div>
-
-        {# Cartão para Gestão de Reuniões #}
-        <div class="col">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Gestão de Reuniões</h5>
-                    <p class="card-text">Crie e acompanhe as reuniões das células.</p>
-                    {# CORREÇÃO AQUI: 'cadastrar_reuniao' alterado para 'adicionar_reuniao' #}
-                    <a href="{% url 'membros:adicionar_reuniao' %}" class="btn btn-primary btn-sm">Adicionar Reunião</a>
-                    <a href="{% url 'membros:listar_reunioes' %}" class="btn btn-secondary btn-sm mt-2">Listar Reuniões</a>
-                </div>
-            </div>
-        </div>
-
-        {# Exemplo de link que *poderia* ter o erro original, agora corrigido #}
-        {# Este link abaixo é um exemplo de onde você *poderia* ter o {% url 'gestao_frequencia' %} #}
-        {# E que deve ser trocado para o nome correto 'home_sistema' se ele apontasse para a home. #}
-        {# Como essa é a home, não faria sentido linkar para si mesma assim,
-            mas se houvesse um link genérico "Voltar ao Início" ele seria assim: #}
-        {# <a href="{% url 'membros:home_sistema' %}">Voltar ao Início</a> #}
-
     </div>
 </div>
 {% endblock %}

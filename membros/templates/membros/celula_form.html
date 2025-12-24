@@ -1,15 +1,49 @@
 {% extends 'base.html' %}
 
-{% block title %}Adicionar/Editar Célula{% endblock %}
+{% block title %}{% if celula %}Editar{% else %}Nova{% endif %} Célula{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1>{{ acao }} Célula</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="{% url 'membros:listar_celulas' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0 text-center">{% if celula %}Editar{% else %}Cadastrar Nova{% endif %} Célula</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">Salvar Célula</button>
+                            <a href="{% url 'membros:listar_celulas' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    /* Estilização para os campos do Django ficarem padrão Bootstrap */
+    input, select, textarea {
+        display: block;
+        width: 100%;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+        border: 1px solid #ced4da;
+        border-radius: .375rem;
+    }
+</style>
 {% endblock %}
