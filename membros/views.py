@@ -33,7 +33,7 @@ def membro_confirm_delete(request, pk):
 
 # --- GESTÃO DE CÉLULAS ---
 def listar_celulas(request):
-    celulas = Celula.objects.all()
+    celulas = Celula.objects.all().order_by('nome')
     return render(request, 'membros/listar_celulas.html', {'celulas': celulas})
 
 def adicionar_celula(request):
@@ -60,7 +60,7 @@ def adicionar_reuniao(request):
 
 def editar_reuniao(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
-    return render(request, 'membros/home_sistema.html')
+    return render(request, 'membros/home_sistema.html', {'reuniao': reuniao})
 
 def reuniao_confirm_delete(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
@@ -89,7 +89,7 @@ def registrar_frequencia_reuniao(request, pk):
                 reuniao=reuniao, membro=membro,
                 defaults={'presente': presente}
             )
-        messages.success(request, "Frequência salva com sucesso!")
+        messages.success(request, "Frequência salva!")
         return redirect('membros:listar_reunioes')
 
     frequencias_existentes = {f.membro_id: f.presente for f in Frequencia.objects.filter(reuniao=reuniao)}
@@ -99,5 +99,11 @@ def registrar_frequencia_reuniao(request, pk):
         'frequencias_existentes': frequencias_existentes
     })
 
+# --- HISTÓRICO (Onde estava o erro) ---
+def historico_frequencia(request):
+    """Esta função resolve o AttributeError do build"""
+    celulas = Celula.objects.all().order_by('nome')
+    return render(request, 'membros/historico_frequencia.html', {'celulas': celulas})
+
 def gerar_pdf_historico_frequencia(request):
-    return HttpResponse("PDF em desenvolvimento.")
+    return HttpResponse("Funcionalidade de PDF em breve.")
