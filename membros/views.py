@@ -1,19 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-# IMPORTAÇÃO CORRETA DOS MODELOS
+# Importação dos seus modelos (conforme seu models.py)
 from .models import Celula, Membro, Reuniao, Frequencia
 
 def home_sistema(request):
     """
-    Página inicial do sistema (necessária para evitar erro no urls.py).
+    Página inicial. 
+    Ajustado para o seu arquivo: home_sistema.html
     """
-    return render(request, 'membros/home.html')
+    return render(request, 'membros/home_sistema.html')
+
+def gestao_view(request):
+    """
+    Página de gestão. 
+    Como você disse que tem outro nome, estou usando o nome que o seu urls.py pede.
+    """
+    # Se você tiver um HTML específico para gestão, troque o nome abaixo
+    return render(request, 'membros/home_sistema.html') 
 
 def registrar_frequencia_reuniao(request):
-    """
-    View para registrar a presença dos membros em uma reunião específica.
-    """
+    """View para registrar a presença dos membros."""
     celulas = Celula.objects.all()
     
     if request.method == "POST":
@@ -21,7 +28,6 @@ def registrar_frequencia_reuniao(request):
         data_reuniao = request.POST.get('data_reuniao')
         hora_reuniao = request.POST.get('hora_reuniao')
         
-        # 1. Busca ou cria a Reunião
         celula = get_object_or_404(Celula, id=celula_id)
         reuniao, created = Reuniao.objects.get_or_create(
             celula=celula,
@@ -29,15 +35,12 @@ def registrar_frequencia_reuniao(request):
             hora_reuniao=hora_reuniao
         )
 
-        # 2. Processa a lista de membros daquela célula
         membros_da_celula = Membro.objects.filter(celula=celula)
         
         for membro in membros_da_celula:
-            # Verifica se o checkbox de presença foi marcado para este membro
             presenca_key = f'presenca_{membro.id}'
             esta_presente = request.POST.get(presenca_key) == 'on'
             
-            # 3. Salva ou atualiza a Frequencia
             Frequencia.objects.update_or_create(
                 reuniao=reuniao,
                 membro=membro,
