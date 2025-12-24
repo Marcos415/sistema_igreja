@@ -1,80 +1,43 @@
-# membros/models.py
-from django.db import models
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Membro, Celula, Frequencia, Reuniao
 from django.utils import timezone
 
-# Modelo para a Célula
-class Celula(models.Model):
-    nome = models.CharField(max_length=100, unique=True)
-    lider = models.CharField(max_length=100)
-    descricao = models.TextField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "Célula"
-        verbose_name_plural = "Células"
-        ordering = ['nome'] # Ordena células por nome
-
-    def __str__(self):
-        return self.nome
-
-# Modelo para o Membro
-class Membro(models.Model):
-    SEXO_CHOICES = [
-        ('M', 'Masculino'),
-        ('F', 'Feminino'),
-        ('O', 'Outro'), # Opcional: para outras identidades
-    ]
-
-    nome_completo = models.CharField(max_length=200, unique=True)
-    data_nascimento = models.DateField(blank=True, null=True)
-    sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, blank=True, null=True)
-    celula = models.ForeignKey(Celula, on_delete=models.SET_NULL, null=True, blank=True, related_name='membros')
-    data_adesao = models.DateField(default=timezone.now)
-    observacoes = models.TextField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = "Membro"
-        verbose_name_plural = "Membros"
-        ordering = ['nome_completo'] # Ordena membros por nome
-
-    def __str__(self):
-        return self.nome_completo
-
-# Modelo para a Reunião
-class Reuniao(models.Model):
-    celula = models.ForeignKey(Celula, on_delete=models.CASCADE, related_name='reunioes')
-    data_reuniao = models.DateField(default=timezone.now)
-    # >>> CAMPO ADICIONADO/CORRIGIDO <<<
-    hora_reuniao = models.TimeField(default='00:00:00') # Valor padrão para evitar erro ao aplicar migração
-    tema = models.CharField(max_length=200, blank=True, null=True)
-
-    class Meta:
-        verbose_name = "Reunião"
-        verbose_name_plural = "Reuniões"
-        # Ajustado para incluir hora_reuniao na unicidade, pois agora é parte da identificação
-        unique_together = ('celula', 'data_reuniao', 'hora_reuniao') 
-        # Ajustado para ordenar também pela hora da reunião
-        ordering = ['-data_reuniao', '-hora_reuniao'] 
-
-    def __str__(self):
-        # Ajuste para incluir a hora na representação do objeto
-        return f"Reunião da Célula {self.celula.nome} em {self.data_reuniao.strftime('%d/%m/%Y')} às {self.hora_reuniao.strftime('%H:%M')}"
-
-# Modelo para a Frequência (presença de membro em reunião)
-class Frequencia(models.Model):
-    reuniao = models.ForeignKey(Reuniao, on_delete=models.CASCADE)
-    membro = models.ForeignKey(Membro, on_delete=models.CASCADE)
-    presente = models.BooleanField(default=False)
-    observacao = models.TextField(blank=True, null=True)
-    data_registro = models.DateTimeField(default=timezone.now) # Adicionado para registrar quando a frequência foi lançada
+def registrar_frequencia_reuniao(request):
+    """
+    View para registrar a presença dos membros em uma reunião específica.
+    """
+    celulas = Celula.objects.all()
     
-    class Meta:
-        verbose_name = "Frequência"
-        verbose_name_plural = "Frequências"
-        unique_together = ('reuniao', 'membro') # Garante que um membro só tem uma frequência por reunião
-        # Ajustado para ordenar também pela hora da reunião
-        ordering = ['reuniao__data_reuniao', 'reuniao__hora_reuniao', 'membro__nome_completo']
+    if request.method == "POST":
+        celula_id = request.POST.get('celula')
+        data_reuniao = request.POST.get('data_reuniao')
+        hora_reuniao = request.POST.get('hora_reuniao')
+        
+        # 1. Busca ou cria a Reunião
+        celula = get_object_or_404(Celula, id=celula_id)
+        reuniao, created = Reuniao.objects.get_or_create(
+            celula=celula,
+            data_reuniao=data_reuniao,
+            hora_reuniao=hora_reuniao
+        )
 
-    def __str__(self):
-        status = "Presente" if self.presente else "Ausente"
-        # Ajuste para mostrar a hora da reunião no __str__
-        return f"{self.membro.nome_completo} - {status} na Reunião de {self.reuniao.data_reuniao.strftime('%d/%m/%Y')} às {self.reuniao.hora_reuniao.strftime('%H:%M')}"
+        # 2. Processa a lista de membros daquela célula
+        membros_da_celula = Membro.objects.filter(celula=celula)
+        
+        for membro in membros_da_celula:
+            # Verifica se o checkbox de presença foi marcado para este membro
+            presenca_key = f'presenca_{membro.id}'
+            esta_presente = request.POST.get(presenca_key) == 'on'
+            
+            # 3. Salva ou atualiza a Frequencia (usando o nome correto do modelo)
+            Frequencia.objects.update_or_create(
+                reuniao=reuniao,
+                membro=membro,
+                defaults={'presente': esta_presente}
+            )
+
+        messages.success(request, f"Frequência da célula {celula.nome} registrada com sucesso!")
+        return redirect('registrar_frequencia_reuniao')
+
+    return render(request, 'membros/registrar_frequencia_reuniao.html', {'celulas': celulas})
