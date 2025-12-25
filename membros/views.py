@@ -41,7 +41,7 @@ def editar_membro(request, pk):
             return redirect('membros:listar_membros')
     else:
         form = MembroForm(instance=membro)
-    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': m})
 
 def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
@@ -103,26 +103,6 @@ def adicionar_reuniao(request):
         form = ReuniaoForm()
     return render(request, 'membros/reuniao_form.html', {'form': form})
 
-def editar_reuniao(request, pk):
-    reuniao = get_object_or_404(Reuniao, pk=pk)
-    if request.method == 'POST':
-        form = ReuniaoForm(request.POST, instance=reuniao)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Reuniao atualizada!")
-            return redirect('membros:listar_reunioes')
-    else:
-        form = ReuniaoForm(instance=reuniao)
-    return render(request, 'membros/reuniao_form.html', {'form': form, 'reuniao': reuniao})
-
-def reuniao_confirm_delete(request, pk):
-    reuniao = get_object_or_404(Reuniao, pk=pk)
-    if request.method == "POST":
-        reuniao.delete()
-        messages.success(request, "Reuniao removida!")
-        return redirect('membros:listar_reunioes')
-    return render(request, 'membros/reuniao_confirm_delete.html', {'reuniao': reuniao})
-
 # --- FREQUENCIA ---
 def selecionar_reuniao_frequencia(request):
     reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
@@ -160,6 +140,7 @@ def historico_frequencia(request):
 
     celulas = Celula.objects.all().order_by('nome')
     
+    # Uso de 'frequencia' no singular para bater com o related_name padrão do Django
     datas_reuniao_disponiveis = Reuniao.objects.filter(
         frequencia__isnull=False
     ).values_list('data_reuniao', flat=True).distinct().order_by('-data_reuniao')
@@ -187,7 +168,7 @@ def historico_frequencia(request):
     }
     return render(request, 'membros/historico_frequencia.html', context)
 
-# --- GERACAO DE PDF ---
+# --- GERACAO DE PDF (SEM ACENTOS E COM UTF-8) ---
 def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
@@ -222,9 +203,10 @@ def gerar_pdf_historico_frequencia(request):
 
     template = get_template('membros/historico_frequencia_pdf.html')
     html = template.render(context)
+    
     result = io.BytesIO()
     
-    # Processamento com UTF-8 para evitar caracteres estranhos
+    # Força encoding UTF-8 para evitar caracteres como Ã©
     pisa_status = pisa.CreatePDF(
         io.BytesIO(html.encode("utf-8")), 
         dest=result,
@@ -235,5 +217,7 @@ def gerar_pdf_historico_frequencia(request):
         return HttpResponse('Erro ao gerar PDF', status=500)
     
     response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    response['Content-Type'] = 'application/pdf; charset=utf-8'
     response['Content-Disposition'] = f'attachment; filename="relatorio_frequencia_{date.today()}.pdf"'
+    
     return response
