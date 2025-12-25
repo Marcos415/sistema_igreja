@@ -153,13 +153,16 @@ def registrar_frequencia_reuniao(request, pk):
         'frequencias_existentes': frequencias_existentes
     })
 
+# --- HISTÓRICO FREQUÊNCIA (CORRIGIDO) ---
 def historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
 
     celulas = Celula.objects.all().order_by('nome')
+    
+    # Mudado de 'frequencias__isnull' para 'frequencia__isnull'
     datas_reuniao_disponiveis = Reuniao.objects.filter(
-        frequencias__isnull=False
+        frequencia__isnull=False
     ).values_list('data_reuniao', flat=True).distinct().order_by('-data_reuniao')
 
     frequencias_query = Frequencia.objects.select_related('membro', 'reuniao').all()
@@ -185,7 +188,7 @@ def historico_frequencia(request):
     }
     return render(request, 'membros/historico_frequencia.html', context)
 
-# --- GERAÇÃO DE PDF (NOME CORRIGIDO PARA O SEU URLS.PY) ---
+# --- PDF (NOME CORRIGIDO PARA O SEU URLS.PY) ---
 def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
