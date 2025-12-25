@@ -1,162 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ titulo_documento }}</title>
+    <meta charset="UTF-8">
     <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
         body {
             font-family: Arial, sans-serif;
-            margin: 15mm; /* Margem reduzida */
-            font-size: 9pt; /* Fonte ligeiramente menor */
+            font-size: 12px;
+            color: #333;
         }
-        h1 {
-            color: #28a745;
+        .header {
             text-align: center;
-            margin-bottom: 15px; /* Margem reduzida */
-            font-size: 18pt; /* Tamanho do título principal */
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
         }
-        h2 {
-            color: #007bff;
-            margin-top: 25px; /* Margem reduzida */
-            margin-bottom: 10px; /* Margem reduzida */
-            border-bottom: 1px solid #eee;
-            padding-bottom: 3px; /* Padding reduzido */
-            font-size: 14pt; /* Tamanho do título da célula */
-            text-align: center; /* CENTRALIZADO AQUI */
+        h1 { color: #007bff; font-size: 20px; margin: 0; }
+        .info { margin-bottom: 15px; font-weight: bold; }
+        
+        /* Estilo da Tabela semelhante ao Sistema */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
-        .member-entry {
-            margin-bottom: 8px; /* Espaçamento entre entradas de membros */
-            border-bottom: 1px dashed #eee; /* Separador leve */
-            padding-bottom: 5px;
-        }
-        .member-line { /* Estilo para o nome e status na mesma linha */
-            display: flex;
-            justify-content: space-between; /* Empurra os itens para as extremidades */
-            align-items: center; /* Alinha verticalmente no centro */
-            margin-bottom: 0; /* Remove margem inferior para não adicionar espaço extra */
-        }
-        .member-name { /* Estilo para o nome do membro */
-            color: #343a40; /* Cor mais escura para o nome */
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
             font-weight: bold;
-            font-size: 11pt; /* Tamanho da fonte do nome */
-            flex-grow: 1; /* Permite que o nome ocupe o espaço disponível */
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #dee2e6;
         }
-        .status-badge-container { /* NOVO CONTAINER para o badge para controle de margem */
-            margin-left: auto; /* Empurra o badge para a direita */
+        td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
         }
-        .attendance-list {
-            list-style: none; /* Remove marcadores de lista */
-            padding-left: 0; /* Remove padding padrão da lista */
-            margin-top: 5px;
-            margin-bottom: 0;
+        .celula-title {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-top: 20px;
         }
-        .attendance-list li {
-            margin-bottom: 2px;
-            line-height: 1.4;
-            display: flex; /* Transforma o item da lista em flex para alinhar data e status */
-            justify-content: space-between; /* Empurra data para esquerda, status para direita */
-            align-items: center;
-        }
-        .badge {
-            padding: 0.25em 0.5em; /* Padding reduzido */
-            border-radius: 0.25rem;
-            font-size: 70%; /* Fonte ligeiramente menor */
-            font-weight: 700;
-            line-height: 1;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            display: inline-block;
-        }
-        .badge.bg-success {
-            background-color: #28a745;
-            color: #fff;
-        }
-        .badge.bg-danger {
-            background-color: #dc3545;
-            color: #fff;
-        }
-        .alert {
-            padding: 8px; /* Padding reduzido */
-            margin-bottom: 10px; /* Margem reduzida */
-            border: 1px solid transparent;
-            border-radius: 0.25rem;
-            color: #004085;
-            background-color: #cce5ff;
-            border-color: #b8daff;
-            text-align: center;
-            font-size: 9pt;
-        }
-        /* Quebras de página para impressão */
-        .cell-section {
-            page-break-before: always; /* Inicia cada célula em uma nova página */
-            page-break-inside: avoid;
-        }
-        .member-entry {
-            page-break-inside: avoid;
-        }
+        .presente { color: #28a745; font-weight: bold; }
+        .falta { color: #dc3545; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h1>{{ titulo_documento }}</h1>
+    <div class="header">
+        <h1>{{ titulo_documento }}</h1>
+        <p>Gerado em: {{ data_geracao|date:"d/m/Y" }}</p>
+    </div>
 
-    {% if celulas_com_frequencia %}
-        {% for celula_item in celulas_com_frequencia %}
-            <div class="cell-section">
-                <h2>Célula: {{ celula_item.celula.nome }}</h2>
-                {% if celula_item.membros_da_celula %}
-                    {% for membro_item in celula_item.membros_da_celula %}
-                        <div class="member-entry">
-                            {# Lógica para exibir nome e status na mesma linha ou como lista #}
-                            {% if selected_data_reuniao %}
-                                {# Se uma data específica foi filtrada, mostra nome e status na mesma linha, status à direita #}
-                                {% for freq in membro_item.frequencias %}
-                                    <div class="member-line">
-                                        <span class="member-name">{{ membro_item.membro.nome_completo }}</span>
-                                        <span class="status-badge-container">
-                                            {% if freq.presente %}
-                                                <span class="badge bg-success">Presente</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">Falta</span>
-                                            {% endif %}
-                                        </span>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                {# Se não há filtro de data, ou múltiplas frequências, mantém a lista #}
-                                <div class="member-line" style="justify-content: flex-start; margin-bottom: 5px;"> {# Alinha à esquerda #}
-                                    <span class="member-name">{{ membro_item.membro.nome_completo }}</span>
-                                </div>
-                                {% if membro_item.frequencias %}
-                                    <ul class="attendance-list">
-                                        {% for freq in membro_item.frequencias %}
-                                        <li>
-                                            <span>{{ freq.reuniao.data_reuniao|date:"d/m/Y" }} ({{ freq.reuniao.tema }})</span>
-                                            <span>
-                                                {% if freq.presente %}
-                                                    <span class="badge bg-success">Presente</span>
-                                                {% else %}
-                                                    <span class="badge bg-danger">Falta</span>
-                                                {% endif %}
-                                            </span>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <p style="padding: 5px;">Nenhum registro de frequência para este membro na célula {{ celula_item.celula.nome }}.</p>
-                                {% endif %}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="alert">Nenhum membro com frequência registrada nesta célula.</p>
-                {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="alert">
-            Nenhum Histórico de Frequência Encontrado para os filtros aplicados.
-            <p style="margin-top: 5px;">Não há nenhuma reunião com frequência registrada ainda ou os filtros não correspondem a dados existentes.</p>
-        </div>
+    {% if selected_data_reuniao %}
+        <div class="info">Relatório referente à data: {{ selected_data_reuniao }}</div>
     {% endif %}
+
+    {% for item in celulas_com_frequencia %}
+        <div class="celula-title">Célula: {{ item.celula.nome }}</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Membro</th>
+                    <th>Data</th>
+                    <th>Reunião (Tema)</th>
+                    <th>Presença</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m_data in item.membros_da_celula %}
+                    {% for freq in m_data.frequencias %}
+                    <tr>
+                        <td>{{ m_data.membro.nome_completo }}</td>
+                        <td>{{ freq.reuniao.data_reuniao|date:"d/m/Y" }}</td>
+                        <td>{{ freq.reuniao.tema|default:"-" }}</td>
+                        <td class="{% if freq.presente %}presente{% else %}falta{% endif %}">
+                            {% if freq.presente %}Sim{% else %}Não{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
 </body>
 </html>
