@@ -41,7 +41,7 @@ def editar_membro(request, pk):
             return redirect('membros:listar_membros')
     else:
         form = MembroForm(instance=membro)
-    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': m})
 
 def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
@@ -51,7 +51,7 @@ def membro_confirm_delete(request, pk):
         return redirect('membros:listar_membros')
     return render(request, 'membros/membro_confirm_delete.html', {'membro': membro})
 
-# --- GESTÃO DE CÉLULAS ---
+# --- GESTÃO DE CELULAS ---
 def listar_celulas(request):
     celulas = Celula.objects.all().order_by('nome')
     return render(request, 'membros/listar_celulas.html', {'celulas': celulas})
@@ -61,7 +61,7 @@ def adicionar_celula(request):
         form = CelulaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Célula criada com sucesso!")
+            messages.success(request, "Celula criada com sucesso!")
             return redirect('membros:listar_celulas')
     else:
         form = CelulaForm()
@@ -73,7 +73,7 @@ def editar_celula(request, pk):
         form = CelulaForm(request.POST, instance=celula)
         if form.is_valid():
             form.save()
-            messages.success(request, "Célula atualizada!")
+            messages.success(request, "Celula atualizada!")
             return redirect('membros:listar_celulas')
     else:
         form = CelulaForm(instance=celula)
@@ -83,11 +83,11 @@ def celula_confirm_delete(request, pk):
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == "POST":
         celula.delete()
-        messages.success(request, "Célula excluída!")
+        messages.success(request, "Celula excluida!")
         return redirect('membros:listar_celulas')
     return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
 
-# --- GESTÃO DE REUNIÕES ---
+# --- GESTÃO DE REUNIOES ---
 def listar_reunioes(request):
     reunioes = Reuniao.objects.all().order_by('-data_reuniao')
     return render(request, 'membros/listar_reunioes.html', {'reunioes': reunioes})
@@ -97,33 +97,13 @@ def adicionar_reuniao(request):
         form = ReuniaoForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Reunião agendada!")
+            messages.success(request, "Reuniao agendada!")
             return redirect('membros:listar_reunioes')
     else:
         form = ReuniaoForm()
     return render(request, 'membros/reuniao_form.html', {'form': form})
 
-def editar_reuniao(request, pk):
-    reuniao = get_object_or_404(Reuniao, pk=pk)
-    if request.method == 'POST':
-        form = ReuniaoForm(request.POST, instance=reuniao)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Reunião atualizada!")
-            return redirect('membros:listar_reunioes')
-    else:
-        form = ReuniaoForm(instance=reuniao)
-    return render(request, 'membros/reuniao_form.html', {'form': form, 'reuniao': reuniao})
-
-def reuniao_confirm_delete(request, pk):
-    reuniao = get_object_or_404(Reuniao, pk=pk)
-    if request.method == "POST":
-        reuniao.delete()
-        messages.success(request, "Reunião removida!")
-        return redirect('membros:listar_reunioes')
-    return render(request, 'membros/reuniao_confirm_delete.html', {'reuniao': reuniao})
-
-# --- FREQUÊNCIA ---
+# --- FREQUENCIA ---
 def selecionar_reuniao_frequencia(request):
     reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
     if request.method == 'POST':
@@ -143,7 +123,7 @@ def registrar_frequencia_reuniao(request, pk):
                 reuniao=reuniao, membro=membro,
                 defaults={'presente': presente}
             )
-        messages.success(request, "Frequência salva!")
+        messages.success(request, "Frequencia salva!")
         return redirect('membros:historico_frequencia')
 
     frequencias_existentes = {f.membro_id: f.presente for f in Frequencia.objects.filter(reuniao=reuniao)}
@@ -153,14 +133,14 @@ def registrar_frequencia_reuniao(request, pk):
         'frequencias_existentes': frequencias_existentes
     })
 
-# --- HISTÓRICO FREQUÊNCIA (CORRIGIDO) ---
+# --- HISTORICO FREQUENCIA ---
 def historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
 
     celulas = Celula.objects.all().order_by('nome')
     
-    # Mudado de 'frequencias__isnull' para 'frequencia__isnull'
+    # Uso de 'frequencia' no singular para bater com o related_name padrão do Django
     datas_reuniao_disponiveis = Reuniao.objects.filter(
         frequencia__isnull=False
     ).values_list('data_reuniao', flat=True).distinct().order_by('-data_reuniao')
@@ -188,7 +168,7 @@ def historico_frequencia(request):
     }
     return render(request, 'membros/historico_frequencia.html', context)
 
-# --- PDF (NOME CORRIGIDO PARA O SEU URLS.PY) ---
+# --- GERACAO DE PDF (SEM ACENTOS E COM UTF-8) ---
 def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
@@ -215,19 +195,29 @@ def gerar_pdf_historico_frequencia(request):
             })
 
     context = {
-        'titulo_documento': 'Relatório de Frequência',
+        'titulo_documento': 'Relatorio de Frequencia',
         'celulas_com_frequencia': celulas_com_frequencia,
         'selected_data_reuniao': data_reuniao,
+        'data_geracao': date.today(),
     }
 
     template = get_template('membros/historico_frequencia_pdf.html')
     html = template.render(context)
+    
     result = io.BytesIO()
-    pisa_status = pisa.CreatePDF(io.BytesIO(html.encode("utf-8")), dest=result)
+    
+    # Força encoding UTF-8 para evitar caracteres como Ã©
+    pisa_status = pisa.CreatePDF(
+        io.BytesIO(html.encode("utf-8")), 
+        dest=result,
+        encoding='utf-8'
+    )
     
     if pisa_status.err:
         return HttpResponse('Erro ao gerar PDF', status=500)
     
     response = HttpResponse(result.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="relatorio_frequencia.pdf"'
+    response['Content-Type'] = 'application/pdf; charset=utf-8'
+    response['Content-Disposition'] = f'attachment; filename="relatorio_frequencia_{date.today()}.pdf"'
+    
     return response

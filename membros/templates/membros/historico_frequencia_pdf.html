@@ -1,74 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <style>
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        h1 { color: #007bff; font-size: 20px; margin: 0; }
-        .info { margin-bottom: 15px; font-weight: bold; }
-        
-        /* Estilo da Tabela semelhante ao Sistema */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th {
-            background-color: #f8f9fa;
-            color: #495057;
-            font-weight: bold;
-            text-align: left;
-            padding: 8px;
-            border: 1px solid #dee2e6;
-        }
-        td {
-            padding: 8px;
-            border: 1px solid #dee2e6;
-        }
-        .celula-title {
-            background-color: #007bff;
-            color: white;
-            padding: 5px 10px;
-            font-size: 14px;
-            margin-top: 20px;
-        }
-        .presente { color: #28a745; font-weight: bold; }
-        .falta { color: #dc3545; font-weight: bold; }
+        @page { size: A4; margin: 1cm; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; }
+        .header { text-align: center; border-bottom: 2px solid #007bff; margin-bottom: 20px; }
+        .celula-title { background-color: #007bff; color: white; padding: 5px; margin-top: 15px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        th, td { border: 1px solid #dee2e6; padding: 6px; text-align: left; }
+        th { background-color: #f8f9fa; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ titulo_documento }}</h1>
-        <p>Gerado em: {{ data_geracao|date:"d/m/Y" }}</p>
+        <h1>Relatorio de Frequencia</h1>
     </div>
 
-    {% if selected_data_reuniao %}
-        <div class="info">Relatório referente à data: {{ selected_data_reuniao }}</div>
-    {% endif %}
-
     {% for item in celulas_com_frequencia %}
-        <div class="celula-title">Célula: {{ item.celula.nome }}</div>
+        <div class="celula-title">Celula: {{ item.celula.nome }}</div>
         <table>
             <thead>
                 <tr>
                     <th>Membro</th>
                     <th>Data</th>
-                    <th>Reunião (Tema)</th>
-                    <th>Presença</th>
+                    <th>Reuniao (Tema)</th>
+                    <th>Presenca</th>
                 </tr>
             </thead>
             <tbody>
@@ -78,9 +35,7 @@
                         <td>{{ m_data.membro.nome_completo }}</td>
                         <td>{{ freq.reuniao.data_reuniao|date:"d/m/Y" }}</td>
                         <td>{{ freq.reuniao.tema|default:"-" }}</td>
-                        <td class="{% if freq.presente %}presente{% else %}falta{% endif %}">
-                            {% if freq.presente %}Sim{% else %}Não{% endif %}
-                        </td>
+                        <td>{% if freq.presente %}Sim{% else %}Nao{% endif %}</td>
                     </tr>
                     {% endfor %}
                 {% endfor %}
