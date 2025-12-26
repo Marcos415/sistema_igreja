@@ -1,51 +1,37 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão IEQ Cruviana</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .logo-img { max-width: 180px; height: auto; margin-bottom: 20px; }
-        .card { transition: transform 0.2s; border: none; }
-        .card:hover { transform: translateY(-5px); }
-    </style>
-</head>
-<body>
 
-<div class="container py-5">
-    <div class="text-center mb-5">
-        <img src="{% static 'img/minha_logo.png' %}" alt="Logo IEQ Cruviana" class="logo-img">
-        
-        <h1 class="fw-bold">Sistema de Gestão IEQ CRUVIANA</h1>
-        <p class="text-muted fs-4">Seja Bem Vindo</p>
-    </div>
+{% block title %}Início - IEQ Cruviana{% endblock %}
 
-    <div class="row g-4 justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow p-4 text-center">
-                <h3 class="text-primary mb-4">Gestão de Frequência</h3>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-primary btn-lg">Registrar Frequência</a>
-                    <a href="{% url 'membros:historico_frequencia' %}" class="btn btn-outline-primary">Histórico de Frequência</a>
-                </div>
+{% block content %}
+<div class="text-center mb-5">
+    <img src="{% static 'img/minha_logo.png' %}" alt="Logo IEQ Cruviana" style="max-width: 160px; height: auto; margin-bottom: 15px;">
+    
+    <h1 class="fw-bold">Sistema de Gestão IEQ CRUVIANA</h1>
+    <p class="text-muted fs-4">Seja Bem Vindo ao Painel Administrativo</p>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow border-0 p-4 text-center h-100">
+            <h3 class="text-primary mb-4">Gestão de Frequência</h3>
+            <p class="text-secondary">Registre a presença dos membros nas reuniões e consulte o histórico.</p>
+            <div class="d-grid gap-2 mt-auto">
+                <a href="{% url 'membros:selecionar_reuniao_frequencia' %}" class="btn btn-primary btn-lg">Registrar Frequência</a>
+                <a href="{% url 'membros:historico_frequencia' %}" class="btn btn-outline-primary">Ver Histórico</a>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-5">
-            <div class="card shadow p-4 text-center">
-                <h3 class="text-success mb-4">Gestão de Membros</h3>
-                <div class="d-grid gap-2">
-                    <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-success btn-lg">Adicionar Novo Membro</a>
-                    <a href="{% url 'membros:listar_membros' %}" class="btn btn-outline-success">Listar Todos os Membros</a>
-                </div>
+    <div class="col-md-5">
+        <div class="card shadow border-0 p-4 text-center h-100">
+            <h3 class="text-success mb-4">Gestão de Membros</h3>
+            <p class="text-secondary">Cadastre novos fiéis, gerencie líderes e organize as células da igreja.</p>
+            <div class="d-grid gap-2 mt-auto">
+                <a href="{% url 'membros:adicionar_membro' %}" class="btn btn-success btn-lg">Adicionar Membro</a>
+                <a href="{% url 'membros:listar_membros' %}" class="btn btn-outline-success">Listar Todos</a>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}
