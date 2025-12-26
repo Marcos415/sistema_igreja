@@ -1,18 +1,15 @@
 import os
 from pathlib import Path
 
-# Caminho base do projeto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# CHAVE DE SEGURANÇA
 SECRET_KEY = 'django-insecure-k!h!2a!7_b%h5v=8(0$@=w1v7d-s-j=e+j7w8q-x*y&n$p-k&'
 
-# DEBUG (Mantenha True para testes, mude para False em produção real)
+# No Render, após os testes, mude para False para maior segurança
 DEBUG = True
 
 ALLOWED_HOSTS = ['gestao-igreja.onrender.com', 'localhost', '127.0.0.1']
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,7 +22,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Essencial para o Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,7 +51,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sistema_igreja.wsgi.application'
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -62,7 +58,6 @@ DATABASES = {
     }
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -70,25 +65,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Boa_Vista'
 USE_I18N = True
 USE_TZ = True
 
-# --- ARQUIVOS ESTÁTICOS (RESOLVE O ERRO DE BUILD) ---
+# --- ARQUIVOS ESTÁTICOS (CSS, IMAGENS) ---
 STATIC_URL = 'static/'
-
-# Local onde o Django coletará arquivos para o servidor web
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Onde o Django busca os arquivos estáticos originais no seu projeto
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-
-# Configuração do WhiteNoise para gerenciar cache
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# --- ARQUIVOS DE MÍDIA (UPLOADS PELO ADMIN) ---
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
