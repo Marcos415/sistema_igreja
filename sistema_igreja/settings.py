@@ -81,3 +81,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Define a página de login padrão do sistema
+LOGIN_URL = '/admin/login/'
+
+# Onde o usuário deve cair após logar com sucesso
+LOGIN_REDIRECT_URL = '/gestao/'
+
+# Onde o usuário deve cair após clicar em "Sair"
+LOGOUT_REDIRECT_URL = '/gestao/'

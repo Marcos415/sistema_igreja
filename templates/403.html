@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Acesso Negado - IEQ Cruviana{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body p-5">
+                    <h1 class="display-1 text-danger fw-bold">403</h1>
+                    <h3 class="mb-4">Acesso Não Permitido</h3>
+                    <p class="text-muted mb-4">
+                        Ops! Parece que você não tem permissão para acessar esta funcionalidade. 
+                        Caso precise de acesso, entre em contato com o administrador do sistema Renan!.
+                    </p>
+                    <a href="{% url 'membros:home_sistema' %}" class="btn btn-primary px-4 shadow-sm">
+                        Voltar para o Início
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

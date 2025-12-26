@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django.contrib.auth.decorators import login_required, permission_required # Importado permission_required
 from .models import Celula, Membro, Reuniao, Frequencia
 from .forms import MembroForm, CelulaForm, ReuniaoForm
 from datetime import date
@@ -9,17 +10,23 @@ import io
 from xhtml2pdf import pisa
 
 # --- HOME E GESTÃO ---
+@login_required
 def home_sistema(request):
     return render(request, 'membros/home_sistema.html')
 
+@login_required
 def gestao_view(request):
     return render(request, 'membros/home_sistema.html')
 
 # --- GESTÃO DE MEMBROS ---
+@login_required
+@permission_required('membros.view_membro', raise_exception=True)
 def listar_membros(request):
     membros = Membro.objects.all().order_by('nome_completo')
     return render(request, 'membros/listar_membros.html', {'membros': membros})
 
+@login_required
+@permission_required('membros.add_membro', raise_exception=True)
 def adicionar_membro(request):
     if request.method == 'POST':
         form = MembroForm(request.POST)
@@ -31,6 +38,8 @@ def adicionar_membro(request):
         form = MembroForm()
     return render(request, 'membros/membro_form.html', {'form': form})
 
+@login_required
+@permission_required('membros.change_membro', raise_exception=True)
 def editar_membro(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
     if request.method == 'POST':
@@ -41,8 +50,10 @@ def editar_membro(request, pk):
             return redirect('membros:listar_membros')
     else:
         form = MembroForm(instance=membro)
-    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': m_membro})
 
+@login_required
+@permission_required('membros.delete_membro', raise_exception=True)
 def membro_confirm_delete(request, pk):
     membro = get_object_or_404(Membro, pk=pk)
     if request.method == "POST":
@@ -52,10 +63,14 @@ def membro_confirm_delete(request, pk):
     return render(request, 'membros/membro_confirm_delete.html', {'membro': membro})
 
 # --- GESTÃO DE CELULAS ---
+@login_required
+@permission_required('membros.view_celula', raise_exception=True)
 def listar_celulas(request):
     celulas = Celula.objects.all().order_by('nome')
     return render(request, 'membros/listar_celulas.html', {'celulas': celulas})
 
+@login_required
+@permission_required('membros.add_celula', raise_exception=True)
 def adicionar_celula(request):
     if request.method == 'POST':
         form = CelulaForm(request.POST)
@@ -67,6 +82,8 @@ def adicionar_celula(request):
         form = CelulaForm()
     return render(request, 'membros/celula_form.html', {'form': form})
 
+@login_required
+@permission_required('membros.change_celula', raise_exception=True)
 def editar_celula(request, pk):
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == 'POST':
@@ -79,6 +96,8 @@ def editar_celula(request, pk):
         form = CelulaForm(instance=celula)
     return render(request, 'membros/celula_form.html', {'form': form, 'celula': celula})
 
+@login_required
+@permission_required('membros.delete_celula', raise_exception=True)
 def celula_confirm_delete(request, pk):
     celula = get_object_or_404(Celula, pk=pk)
     if request.method == "POST":
@@ -88,10 +107,14 @@ def celula_confirm_delete(request, pk):
     return render(request, 'membros/celula_confirm_delete.html', {'celula': celula})
 
 # --- GESTÃO DE REUNIOES ---
+@login_required
+@permission_required('membros.view_reuniao', raise_exception=True)
 def listar_reunioes(request):
     reunioes = Reuniao.objects.all().order_by('-data_reuniao')
     return render(request, 'membros/listar_reunioes.html', {'reunioes': reunioes})
 
+@login_required
+@permission_required('membros.add_reuniao', raise_exception=True)
 def adicionar_reuniao(request):
     if request.method == 'POST':
         form = ReuniaoForm(request.POST)
@@ -103,6 +126,8 @@ def adicionar_reuniao(request):
         form = ReuniaoForm()
     return render(request, 'membros/reuniao_form.html', {'form': form})
 
+@login_required
+@permission_required('membros.change_reuniao', raise_exception=True)
 def editar_reuniao(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
     if request.method == 'POST':
@@ -115,6 +140,8 @@ def editar_reuniao(request, pk):
         form = ReuniaoForm(instance=reuniao)
     return render(request, 'membros/reuniao_form.html', {'form': form, 'reuniao': reuniao})
 
+@login_required
+@permission_required('membros.delete_reuniao', raise_exception=True)
 def reuniao_confirm_delete(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
     if request.method == "POST":
@@ -124,6 +151,7 @@ def reuniao_confirm_delete(request, pk):
     return render(request, 'membros/reuniao_confirm_delete.html', {'reuniao': reuniao})
 
 # --- FREQUENCIA ---
+@login_required
 def selecionar_reuniao_frequencia(request):
     reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
     if request.method == 'POST':
@@ -132,6 +160,8 @@ def selecionar_reuniao_frequencia(request):
             return redirect('membros:registrar_frequencia_reuniao', pk=reuniao_id)
     return render(request, 'membros/selecionar_reuniao_frequencia.html', {'reunioes': reunioes})
 
+@login_required
+@permission_required('membros.add_frequencia', raise_exception=True)
 def registrar_frequencia_reuniao(request, pk):
     reuniao = get_object_or_404(Reuniao, pk=pk)
     membros = Membro.objects.filter(celula=reuniao.celula).order_by('nome_completo')
@@ -154,6 +184,8 @@ def registrar_frequencia_reuniao(request, pk):
     })
 
 # --- HISTORICO FREQUENCIA ---
+@login_required
+@permission_required('membros.view_frequencia', raise_exception=True)
 def historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
@@ -188,6 +220,7 @@ def historico_frequencia(request):
     return render(request, 'membros/historico_frequencia.html', context)
 
 # --- GERACAO DE PDF ---
+@login_required
 def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
@@ -224,7 +257,6 @@ def gerar_pdf_historico_frequencia(request):
     html = template.render(context)
     result = io.BytesIO()
     
-    # Processamento com UTF-8 para evitar caracteres estranhos
     pisa_status = pisa.CreatePDF(
         io.BytesIO(html.encode("utf-8")), 
         dest=result,
