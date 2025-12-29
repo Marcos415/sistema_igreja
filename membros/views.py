@@ -2,12 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import HttpResponse
 from django.template.loader import get_template
-from django.contrib.auth.decorators import login_required, permission_required # Importado permission_required
+from django.contrib.auth.decorators import login_required, permission_required
 from .models import Celula, Membro, Reuniao, Frequencia
 from .forms import MembroForm, CelulaForm, ReuniaoForm
 from datetime import date
 import io
 from xhtml2pdf import pisa
+
+# --- FUNÇÃO AUXILIAR PARA ERRO 403 ---
+def custom_403(request, exception):
+    return render(request, '403.html', status=403)
 
 # --- HOME E GESTÃO ---
 @login_required
@@ -22,7 +26,11 @@ def gestao_view(request):
 @login_required
 @permission_required('membros.view_membro', raise_exception=True)
 def listar_membros(request):
-    membros = Membro.objects.all().order_by('nome_completo')
+    if request.user.is_superuser:
+        membros = Membro.objects.all().order_by('nome_completo')
+    else:
+        # Filtra membros que pertencem a células lideradas pelo usuário logado
+        membros = Membro.objects.filter(celula__lider=request.user).order_by('nome_completo')
     return render(request, 'membros/listar_membros.html', {'membros': membros})
 
 @login_required
@@ -50,7 +58,7 @@ def editar_membro(request, pk):
             return redirect('membros:listar_membros')
     else:
         form = MembroForm(instance=membro)
-    return render(request, 'membros/membro_form.html', {'form': form, 'membro': m_membro})
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
 
 @login_required
 @permission_required('membros.delete_membro', raise_exception=True)
@@ -66,7 +74,11 @@ def membro_confirm_delete(request, pk):
 @login_required
 @permission_required('membros.view_celula', raise_exception=True)
 def listar_celulas(request):
-    celulas = Celula.objects.all().order_by('nome')
+    if request.user.is_superuser:
+        celulas = Celula.objects.all().order_by('nome')
+    else:
+        # O líder vê apenas a célula que ele lidera
+        celulas = Celula.objects.filter(lider=request.user).order_by('nome')
     return render(request, 'membros/listar_celulas.html', {'celulas': celulas})
 
 @login_required
@@ -110,7 +122,11 @@ def celula_confirm_delete(request, pk):
 @login_required
 @permission_required('membros.view_reuniao', raise_exception=True)
 def listar_reunioes(request):
-    reunioes = Reuniao.objects.all().order_by('-data_reuniao')
+    if request.user.is_superuser:
+        reunioes = Reuniao.objects.all().order_by('-data_reuniao')
+    else:
+        # Líder vê apenas as reuniões da sua célula
+        reunioes = Reuniao.objects.filter(celula__lider=request.user).order_by('-data_reuniao')
     return render(request, 'membros/listar_reunioes.html', {'reunioes': reunioes})
 
 @login_required
@@ -153,7 +169,11 @@ def reuniao_confirm_delete(request, pk):
 # --- FREQUENCIA ---
 @login_required
 def selecionar_reuniao_frequencia(request):
-    reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
+    if request.user.is_superuser:
+        reunioes = Reuniao.objects.filter(data_reuniao__lte=date.today()).order_by('-data_reuniao')
+    else:
+        reunioes = Reuniao.objects.filter(celula__lider=request.user, data_reuniao__lte=date.today()).order_by('-data_reuniao')
+    
     if request.method == 'POST':
         reuniao_id = request.POST.get('reuniao_id')
         if reuniao_id:
@@ -190,13 +210,17 @@ def historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
 
-    celulas = Celula.objects.all().order_by('nome')
+    # Filtro de células para o dropdown de busca
+    if request.user.is_superuser:
+        celulas = Celula.objects.all().order_by('nome')
+        frequencias_query = Frequencia.objects.select_related('membro', 'reuniao').all()
+    else:
+        celulas = Celula.objects.filter(lider=request.user).order_by('nome')
+        frequencias_query = Frequencia.objects.select_related('membro', 'reuniao').filter(reuniao__celula__lider=request.user)
     
     datas_reuniao_disponiveis = Reuniao.objects.filter(
         frequencia__isnull=False
     ).values_list('data_reuniao', flat=True).distinct().order_by('-data_reuniao')
-
-    frequencias_query = Frequencia.objects.select_related('membro', 'reuniao').all()
 
     if celula_id:
         frequencias_query = frequencias_query.filter(membro__celula_id=celula_id)
@@ -225,7 +249,11 @@ def gerar_pdf_historico_frequencia(request):
     celula_id = request.GET.get('celula_id')
     data_reuniao = request.GET.get('data_reuniao')
 
-    celulas_list = Celula.objects.all()
+    if request.user.is_superuser:
+        celulas_list = Celula.objects.all()
+    else:
+        celulas_list = Celula.objects.filter(lider=request.user)
+
     if celula_id:
         celulas_list = celulas_list.filter(pk=celula_id)
 
@@ -269,3 +297,88 @@ def gerar_pdf_historico_frequencia(request):
     response = HttpResponse(result.getvalue(), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="relatorio_frequencia_{date.today()}.pdf"'
     return response
+
+
+# ... (mantenha seus imports iguais)
+
+# --- GESTÃO DE MEMBROS ---
+
+@login_required
+@permission_required('membros.add_membro', raise_exception=True)
+def adicionar_membro(request):
+    if request.method == 'POST':
+        form = MembroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Membro cadastrado com sucesso!")
+            return redirect('membros:listar_membros')
+    else:
+        form = MembroForm()
+        # FILTRO: Líder só vê a própria célula no campo de seleção ao cadastrar
+        if not request.user.is_superuser:
+            form.fields['celula'].queryset = Celula.objects.filter(lider=request.user)
+            
+    return render(request, 'membros/membro_form.html', {'form': form})
+
+@login_required
+@permission_required('membros.change_membro', raise_exception=True)
+def editar_membro(request, pk):
+    # SEGURANÇA: Impede que um líder edite um membro de outra célula via URL
+    if request.user.is_superuser:
+        membro = get_object_or_404(Membro, pk=pk)
+    else:
+        membro = get_object_or_404(Membro, pk=pk, celula__lider=request.user)
+
+    if request.method == 'POST':
+        form = MembroForm(request.POST, instance=membro)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cadastro do membro atualizado!")
+            return redirect('membros:listar_membros')
+    else:
+        form = MembroForm(instance=membro)
+        if not request.user.is_superuser:
+            form.fields['celula'].queryset = Celula.objects.filter(lider=request.user)
+
+    return render(request, 'membros/membro_form.html', {'form': form, 'membro': membro})
+
+# --- GESTÃO DE REUNIOES ---
+
+@login_required
+@permission_required('membros.add_reuniao', raise_exception=True)
+def adicionar_reuniao(request):
+    if request.method == 'POST':
+        form = ReuniaoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reuniao agendada!")
+            return redirect('membros:listar_reunioes')
+    else:
+        form = ReuniaoForm()
+        # FILTRO: Líder só vê a própria célula ao agendar reunião
+        if not request.user.is_superuser:
+            form.fields['celula'].queryset = Celula.objects.filter(lider=request.user)
+    return render(request, 'membros/reuniao_form.html', {'form': form})
+
+@login_required
+@permission_required('membros.change_reuniao', raise_exception=True)
+def editar_reuniao(request, pk):
+    # SEGURANÇA: Impede que um líder edite reunião de outra célula via URL
+    if request.user.is_superuser:
+        reuniao = get_object_or_404(Reuniao, pk=pk)
+    else:
+        reuniao = get_object_or_404(Reuniao, pk=pk, celula__lider=request.user)
+
+    if request.method == 'POST':
+        form = ReuniaoForm(request.POST, instance=reuniao)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Reuniao atualizada!")
+            return redirect('membros:listar_reunioes')
+    else:
+        form = ReuniaoForm(instance=reuniao)
+        if not request.user.is_superuser:
+            form.fields['celula'].queryset = Celula.objects.filter(lider=request.user)
+    return render(request, 'membros/reuniao_form.html', {'form': form, 'reuniao': reuniao})
+
+# ... (mantenha o restante das funções como estão, elas já possuem filtros básicos)

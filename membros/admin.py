@@ -31,7 +31,7 @@ class MembroAdmin(admin.ModelAdmin):
 # Classe Admin para Célula
 @admin.register(Celula)
 class CelulaAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'lider', 'total_membros_celula')
+    list_display = ('nome', 'total_membros_celula')
     search_fields = ('nome', 'lider')
     list_filter = ('lider',)
 
